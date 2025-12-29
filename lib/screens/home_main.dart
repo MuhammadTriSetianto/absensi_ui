@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:absensi_proyek/wigeds/curved_clipper.dart';
 
 class HomeMain extends StatefulWidget {
   const HomeMain({super.key});
@@ -57,8 +56,7 @@ class _HomeMainState extends State<HomeMain> {
     now = DateTime.now();
 
     setState(() {
-      jam =
-          "${now.hour.toString().padLeft(2, '0')}:"
+      jam = "${now.hour.toString().padLeft(2, '0')}:"
           "${now.minute.toString().padLeft(2, '0')}:"
           "${now.second.toString().padLeft(2, '0')}";
 
@@ -80,376 +78,573 @@ class _HomeMainState extends State<HomeMain> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: SizedBox(
+      body: Container(
         height: size.height,
         width: size.width,
-        child: Stack(
-          children: [
-            // ===== BACKGROUND =====
-            SizedBox(
-              child: Column(
-                children: [
-                  Container(
-                    height: size.height * 0.4,
-                    width: size.width,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(50),
-                        bottomRight: Radius.circular(50),
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topRight,
-                        end: Alignment.bottomLeft,
-                        colors: [Color(0xFF0A3D5C), Color(0xFF1A4D6D)],
-                      ),
-                    ),
-                    child: ClipPath(
-                      clipper: CurvedClipper(),
-                      child: Container(
-                        height: size.height * 0.5,
-                        color: const Color.fromARGB(255, 131, 168, 192),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: size.height * 0.09),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      child: Text('Menu Utama'),
-                    ),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 0.1,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0A3D5C),
+              Color(0xFF1A4D6D),
+              Color(0xFFF5F5F5),
+            ],
+            stops: [0.0, 0.3, 0.3],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Section
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // User Card
+                      _buildUserCard(),
+                      const SizedBox(height: 20),
 
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Center(
-                                child: Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.2,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.1,
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(
-                                      179,
-                                      178,
-                                      169,
-                                      169,
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.camera_enhance_rounded,
-                                        color: Colors.black,
-                                        size: 35,
-                                        textDirection: TextDirection.ltr,
-                                      ),
-                                      Text("Absensi"),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Center(
-                                child: Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.2,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.1,
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(
-                                      179,
-                                      178,
-                                      169,
-                                      169,
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.work_history_rounded,
-                                        color: Colors.black,
-                                        size: 35,
-                                        textDirection: TextDirection.ltr,
-                                      ),
-                                      Text("Izin"),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Center(
-                                child: Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.2,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.1,
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(
-                                      179,
-                                      178,
-                                      169,
-                                      169,
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.book_online_sharp,
-                                        color: Colors.black,
-                                        size: 35,
-                                        textDirection: TextDirection.ltr,
-                                      ),
-                                      Text("Cuti"),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
+                      // Clock & Date Card
+                      _buildClockCard(),
+                    ],
+                  ),
+                ),
+
+                // Main Content
+                Container(
+                  width: size.width,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Menu Section
+                        const Text(
+                          'Menu Utama',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0A3D5C),
                           ),
                         ),
+                        const SizedBox(height: 16),
+
+                        // Menu Grid
+                        _buildMenuGrid(),
+                        const SizedBox(height: 24),
+
+                        // Rekap Absensi Card
+                        const Text(
+                          'Rekap Absensi Bulan Ini',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0A3D5C),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildRekapCard(),
                       ],
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0066CC), Color(0xFF00BFFF)],
               ),
             ),
+            child: const CircleAvatar(
+              radius: 32,
+              backgroundColor: Colors.white,
+              child: Icon(
+                Icons.person,
+                size: 40,
+                color: Color(0xFF0066CC),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'Selamat Datang! 👋',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Andi Saputra',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0A3D5C),
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Karyawan • ID: KRY001',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0066CC).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.notifications_outlined,
+              color: Color(0xFF0066CC),
+              size: 24,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // ===== CARD USER =====
-            Positioned(
-              top: size.height * 0.05,
-              left: size.width * 0.05,
-              child: Container(
-                height: size.height * 0.1,
-                width: size.width * 0.9,
+  Widget _buildClockCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF0066CC),
+            Color(0xFF0080FF),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0066CC).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Clock Section
+          Row(
+            children: [
+              Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
+                child: const Icon(
+                  Icons.access_time_rounded,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const CircleAvatar(radius: 30),
-                    const SizedBox(width: 12),
+                    const Text(
+                      'Waktu Saat Ini',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        jam,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Info Section
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                // Date Row
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_today, color: Colors.white70, size: 14),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "Andi",
+                        children: [
+                          const Text(
+                            'Hari & Tanggal',
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              fontFamily: 'Inter',
+                              color: Colors.white70,
+                              fontSize: 10,
                             ),
                           ),
-                          Text(
-                            "Karyawan",
-                            style: TextStyle(fontSize: 12, fontFamily: 'Inter'),
+                          const SizedBox(height: 2),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '$hari, $tanggal',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-
-            // ===== ABSENSI =====
-            Positioned(
-              top: size.height * 0.18,
-              left: size.width * 0.05,
-              child: Container(
-                width: size.width * 0.9,
-                height: size.height * 0.28,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(20),
+                
+                const SizedBox(height: 12),
+                
+                // Divider
+                Container(
+                  height: 1,
+                  color: Colors.white.withOpacity(0.2),
                 ),
-                child: Column(
+                
+                const SizedBox(height: 12),
+                
+                // Masuk & Pulang Row
+                Row(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        // KIRI
-                        Row(
-                          children: [
-                            const Icon(Icons.lock_clock, size: 56),
-                            const SizedBox(width: 12),
-                            Column(
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.login, color: Colors.white70, size: 14),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  "Absensi",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
+                              children: const [
                                 Text(
-                                  jam,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
+                                  'Masuk',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
                                   ),
                                 ),
-                                const Text(
-                                  "Masuk : 08:00:00",
-                                  style: TextStyle(fontSize: 12),
+                                SizedBox(height: 2),
+                                Text(
+                                  '08:00',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                        // KANAN
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text(
-                              "Tanggal",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              "$hari, $tanggal",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const Text(
-                              "Pulang : 16:00:00",
-                              style: TextStyle(fontSize: 12),
-                            ),
-                            SizedBox(),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.001,
-                        color: const Color(0xFF0A3D5C),
-                      ),
-                    ),
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 0.12,
-
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Center(
-                            child: Text(
-                              "Rekap Absensi",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: 14,
-                              ),
-                            ),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      "Hadir",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                    Text(
-                                      "12",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                  ],
+                        ],
+                      ),
+                    ),
+                    
+                    Container(
+                      width: 1,
+                      height: 30,
+                      color: Colors.white.withOpacity(0.2),
+                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.logout, color: Colors.white70, size: 14),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Pulang',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                  ),
                                 ),
-                              ),
-                              Container(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      "Izin",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                    Text(
-                                      "12",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                  ],
+                                SizedBox(height: 2),
+                                Text(
+                                  '16:00',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              Container(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      "Cuti",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                    Text(
-                                      "12",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuGrid() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildMenuItem(
+          icon: Icons.camera_alt_rounded,
+          label: 'Absensi',
+          color: const Color(0xFF0066CC),
+          onTap: () {},
+        ),
+        _buildMenuItem(
+          icon: Icons.event_note_rounded,
+          label: 'Izin',
+          color: const Color(0xFFFF6B35),
+          onTap: () {},
+        ),
+        _buildMenuItem(
+          icon: Icons.beach_access_rounded,
+          label: 'Cuti',
+          color: const Color(0xFF00C897),
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRekapCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text(
+                'Total Kehadiran',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                'Desember 2024',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              _buildStatItem(
+                label: 'Hadir',
+                value: '22',
+                icon: Icons.check_circle_rounded,
+                color: const Color(0xFF00C897),
+              ),
+              _buildStatItem(
+                label: 'Izin',
+                value: '2',
+                icon: Icons.event_note_rounded,
+                color: const Color(0xFFFF6B35),
+              ),
+              _buildStatItem(
+                label: 'Cuti',
+                value: '1',
+                icon: Icons.beach_access_rounded,
+                color: const Color(0xFF0066CC),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 28,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: color.withOpacity(0.8),
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
