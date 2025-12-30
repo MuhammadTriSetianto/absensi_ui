@@ -8,9 +8,10 @@ class Aktiviti extends StatefulWidget {
   State<Aktiviti> createState() => _AktivitiState();
 }
 
-class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin {
+class _AktivitiState extends State<Aktiviti>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   // Dummy data
   final List<Map<String, dynamic>> notifications = [
     {
@@ -121,28 +122,6 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
     }
   }
 
-  void _markAllAsRead() {
-    setState(() {
-      for (var notification in notifications) {
-        notification['isRead'] = true;
-      }
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: const [
-            Icon(Icons.check_circle, color: Colors.white, size: 20),
-            SizedBox(width: 12),
-            Text('Semua notifikasi ditandai sudah dibaca'),
-          ],
-        ),
-        backgroundColor: const Color(0xFF00C897),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,18 +144,7 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
             fontWeight: FontWeight.w600,
           ),
         ),
-        centerTitle: true,
-        actions: [
-          if (unreadCount > 0)
-            TextButton.icon(
-              onPressed: _markAllAsRead,
-              icon: const Icon(Icons.done_all, color: Colors.white70, size: 18),
-              label: const Text(
-                'Tandai',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-            ),
-        ],
+
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Container(
@@ -213,7 +181,10 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
                       if (unreadCount > 0) ...[
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFF6B35),
                             borderRadius: BorderRadius.circular(10),
@@ -247,10 +218,7 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildNotificationList(),
-          _buildActivityList(),
-        ],
+        children: [_buildNotificationList(), _buildActivityList()],
       ),
     );
   }
@@ -339,7 +307,9 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
             content: const Text('Notifikasi dihapus'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -357,14 +327,18 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isRead ? Colors.transparent : notification['color'].withOpacity(0.3),
+              color:
+                  isRead
+                      ? Colors.transparent
+                      : notification['color'].withOpacity(0.3),
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: isRead 
-                    ? Colors.black.withOpacity(0.03)
-                    : notification['color'].withOpacity(0.15),
+                color:
+                    isRead
+                        ? Colors.black.withOpacity(0.03)
+                        : notification['color'].withOpacity(0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -397,7 +371,8 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
                             notification['title'],
                             style: TextStyle(
                               fontSize: 15,
-                              fontWeight: isRead ? FontWeight.w600 : FontWeight.bold,
+                              fontWeight:
+                                  isRead ? FontWeight.w600 : FontWeight.bold,
                               color: const Color(0xFF0A3D5C),
                             ),
                           ),
@@ -540,10 +515,7 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
                       const SizedBox(width: 4),
                       Text(
                         _formatTime(activity['time']),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[400],
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                       ),
                     ],
                   ),
@@ -587,11 +559,7 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
                   ),
                 ],
               ),
-              child: Icon(
-                icon,
-                size: 64,
-                color: Colors.grey[300],
-              ),
+              child: Icon(icon, size: 64, color: Colors.grey[300]),
             ),
             const SizedBox(height: 24),
             Text(
@@ -605,10 +573,7 @@ class _AktivitiState extends State<Aktiviti> with SingleTickerProviderStateMixin
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],

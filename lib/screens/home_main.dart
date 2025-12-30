@@ -42,6 +42,7 @@ class _HomeMainState extends State<HomeMain> {
   String jam = '';
   String tanggal = '';
   String hari = '';
+  String bulannow = '';
 
   @override
   void initState() {
@@ -56,14 +57,16 @@ class _HomeMainState extends State<HomeMain> {
     now = DateTime.now();
 
     setState(() {
-      jam = "${now.hour.toString().padLeft(2, '0')}:"
+      jam =
+          "${now.hour.toString().padLeft(2, '0')}:"
           "${now.minute.toString().padLeft(2, '0')}:"
           "${now.second.toString().padLeft(2, '0')}";
 
       hari = hariIndonesia[now.weekday - 1];
       final bulan = bulanIndonesia[now.month - 1];
 
-      tanggal = "${now.day} $bulan ${now.year}";
+      bulannow = " $bulan ${now.year}";
+      tanggal = "${now.day} $bulannow";
     });
   }
 
@@ -85,11 +88,7 @@ class _HomeMainState extends State<HomeMain> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0A3D5C),
-              Color(0xFF1A4D6D),
-              Color(0xFFF5F5F5),
-            ],
+            colors: [Color(0xFF0A3D5C), Color(0xFF1A4D6D), Color(0xFFF5F5F5)],
             stops: [0.0, 0.3, 0.3],
           ),
         ),
@@ -105,14 +104,11 @@ class _HomeMainState extends State<HomeMain> {
                     children: [
                       // User Card
                       _buildUserCard(),
-                      const SizedBox(height: 20),
-
                       // Clock & Date Card
                       _buildClockCard(),
                     ],
                   ),
                 ),
-
                 // Main Content
                 Container(
                   width: size.width,
@@ -124,25 +120,11 @@ class _HomeMainState extends State<HomeMain> {
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.symmetric( horizontal:30 , vertical: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Menu Section
-                        const Text(
-                          'Menu Utama',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0A3D5C),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Menu Grid
-                        _buildMenuGrid(),
-                        const SizedBox(height: 24),
-
+     
                         // Rekap Absensi Card
                         const Text(
                           'Rekap Absensi Bulan Ini',
@@ -153,7 +135,7 @@ class _HomeMainState extends State<HomeMain> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildRekapCard(),
+                        _buildRekapCard(bulan: bulannow),
                       ],
                     ),
                   ),
@@ -193,11 +175,7 @@ class _HomeMainState extends State<HomeMain> {
             child: const CircleAvatar(
               radius: 32,
               backgroundColor: Colors.white,
-              child: Icon(
-                Icons.person,
-                size: 40,
-                color: Color(0xFF0066CC),
-              ),
+              child: Icon(Icons.person, size: 40, color: Color(0xFF0066CC)),
             ),
           ),
           const SizedBox(width: 16),
@@ -225,10 +203,7 @@ class _HomeMainState extends State<HomeMain> {
                 SizedBox(height: 2),
                 Text(
                   'Karyawan • ID: KRY001',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -255,10 +230,7 @@ class _HomeMainState extends State<HomeMain> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF0066CC),
-            Color(0xFF0080FF),
-          ],
+          colors: [Color(0xFF0066CC), Color(0xFF0080FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -334,7 +306,11 @@ class _HomeMainState extends State<HomeMain> {
                 // Date Row
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today, color: Colors.white70, size: 14),
+                    const Icon(
+                      Icons.calendar_today,
+                      color: Colors.white70,
+                      size: 14,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Column(
@@ -365,24 +341,25 @@ class _HomeMainState extends State<HomeMain> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Divider
-                Container(
-                  height: 1,
-                  color: Colors.white.withOpacity(0.2),
-                ),
-                
+                Container(height: 1, color: Colors.white.withOpacity(0.2)),
+
                 const SizedBox(height: 12),
-                
+
                 // Masuk & Pulang Row
                 Row(
                   children: [
                     Expanded(
                       child: Row(
                         children: [
-                          const Icon(Icons.login, color: Colors.white70, size: 14),
+                          const Icon(
+                            Icons.login,
+                            color: Colors.white70,
+                            size: 14,
+                          ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Column(
@@ -410,18 +387,22 @@ class _HomeMainState extends State<HomeMain> {
                         ],
                       ),
                     ),
-                    
+
                     Container(
                       width: 1,
                       height: 30,
                       color: Colors.white.withOpacity(0.2),
                       margin: const EdgeInsets.symmetric(horizontal: 12),
                     ),
-                    
+
                     Expanded(
                       child: Row(
                         children: [
-                          const Icon(Icons.logout, color: Colors.white70, size: 14),
+                          const Icon(
+                            Icons.logout,
+                            color: Colors.white70,
+                            size: 14,
+                          ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Column(
@@ -459,32 +440,6 @@ class _HomeMainState extends State<HomeMain> {
     );
   }
 
-  Widget _buildMenuGrid() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildMenuItem(
-          icon: Icons.camera_alt_rounded,
-          label: 'Absensi',
-          color: const Color(0xFF0066CC),
-          onTap: () {},
-        ),
-        _buildMenuItem(
-          icon: Icons.event_note_rounded,
-          label: 'Izin',
-          color: const Color(0xFFFF6B35),
-          onTap: () {},
-        ),
-        _buildMenuItem(
-          icon: Icons.beach_access_rounded,
-          label: 'Cuti',
-          color: const Color(0xFF00C897),
-          onTap: () {},
-        ),
-      ],
-    );
-  }
-
   Widget _buildMenuItem({
     required IconData icon,
     required String label,
@@ -518,11 +473,7 @@ class _HomeMainState extends State<HomeMain> {
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 32,
-                ),
+                child: Icon(icon, color: color, size: 32),
               ),
               const SizedBox(height: 12),
               Text(
@@ -540,7 +491,7 @@ class _HomeMainState extends State<HomeMain> {
     );
   }
 
-  Widget _buildRekapCard() {
+  Widget _buildRekapCard({required String bulan}) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -558,7 +509,7 @@ class _HomeMainState extends State<HomeMain> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
                 'Total Kehadiran',
                 style: TextStyle(
@@ -567,13 +518,7 @@ class _HomeMainState extends State<HomeMain> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              Text(
-                'Desember 2024',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
+              Text(bulan, style: TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
           const SizedBox(height: 20),
@@ -617,18 +562,11 @@ class _HomeMainState extends State<HomeMain> {
         decoration: BoxDecoration(
           color: color.withOpacity(0.08),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: color.withOpacity(0.2),
-            width: 1,
-          ),
+          border: Border.all(color: color.withOpacity(0.2), width: 1),
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 28,
-            ),
+            Icon(icon, color: color, size: 28),
             const SizedBox(height: 8),
             Text(
               value,
