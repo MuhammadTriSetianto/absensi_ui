@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:async';
 import 'package:intl/intl.dart';
 
 class AbsenKeluarPage extends StatefulWidget {
@@ -12,6 +13,7 @@ class AbsenKeluarPage extends StatefulWidget {
 }
 
 class _AbsenKeluarPageState extends State<AbsenKeluarPage> {
+  Timer? _timer;
   Position? _currentPosition;
   File? _imageFile;
   bool _isLoadingLocation = false;
@@ -20,14 +22,19 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> {
   @override
   void initState() {
     super.initState();
-    _updateTime();
+    _startClock();
   }
 
-  void _updateTime() {
-    setState(() {
-      _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+  void _startClock() {
+    _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+
+      setState(() {
+        _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+      });
     });
-    Future.delayed(const Duration(seconds: 1), _updateTime);
   }
 
   Future<void> _getCurrentLocation() async {
@@ -792,6 +799,7 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> {
 
   @override
   void dispose() {
+    _timer?.cancel(); // ← INI PENTING
     super.dispose();
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:async';
 import 'package:intl/intl.dart';
 
 class AbsenMasukPage extends StatefulWidget {
@@ -17,19 +18,26 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
   File? _imageFile;
   bool _isLoadingLocation = false;
   String _currentTime = '';
+  Timer? _timer;
 
   @override
-  void initState() {
-    super.initState();
-    _updateTime();
-  }
+@override
+void initState() {
+  super.initState();
+  _startClock();
+}
 
-  void _updateTime() {
+void _startClock() {
+  _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+
+  _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    if (!mounted) return;
+
     setState(() {
       _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
     });
-    Future.delayed(const Duration(seconds: 1), _updateTime);
-  }
+  });
+}
 
   Future<void> _getCurrentLocation() async {
     setState(() {
@@ -86,54 +94,55 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.blue),
-              title: const Text('Ambil dari Kamera'),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? image = await picker.pickImage(
-                  source: ImageSource.camera,
-                  imageQuality: 80,
-                );
-                if (image != null) {
-                  setState(() {
-                    _imageFile = File(image.path);
-                  });
-                  _showSnackBar('Foto berhasil diambil!');
-                }
-              },
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Colors.blue),
+                  title: const Text('Ambil dari Kamera'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final XFile? image = await picker.pickImage(
+                      source: ImageSource.camera,
+                      imageQuality: 80,
+                    );
+                    if (image != null) {
+                      setState(() {
+                        _imageFile = File(image.path);
+                      });
+                      _showSnackBar('Foto berhasil diambil!');
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Colors.green),
+                  title: const Text('Pilih dari Galeri'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final XFile? image = await picker.pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 80,
+                    );
+                    if (image != null) {
+                      setState(() {
+                        _imageFile = File(image.path);
+                      });
+                      _showSnackBar('Foto berhasil dipilih!');
+                    }
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.green),
-              title: const Text('Pilih dari Galeri'),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? image = await picker.pickImage(
-                  source: ImageSource.gallery,
-                  imageQuality: 80,
-                );
-                if (image != null) {
-                  setState(() {
-                    _imageFile = File(image.path);
-                  });
-                  _showSnackBar('Foto berhasil dipilih!');
-                }
-              },
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -166,28 +175,31 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
     // Di sini Anda bisa mengirim data ke API
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 28),
-            SizedBox(width: 10),
-            Text('Berhasil!'),
-          ],
-        ),
-        content: Text(
-          'Absensi berhasil!\n\n'
-          'ID: ${_idPegawaiController.text}\n'
-          'Lat: ${_currentPosition!.latitude.toStringAsFixed(6)}\n'
-          'Long: ${_currentPosition!.longitude.toStringAsFixed(6)}',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 28),
+                SizedBox(width: 10),
+                Text('Berhasil!'),
+              ],
+            ),
+            content: Text(
+              'Absensi berhasil!\n\n'
+              'ID: ${_idPegawaiController.text}\n'
+              'Lat: ${_currentPosition!.latitude.toStringAsFixed(6)}\n'
+              'Long: ${_currentPosition!.longitude.toStringAsFixed(6)}',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -243,7 +255,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: const Icon(
-                              Icons.check_circle,
+                              Icons.login,
                               color: Color(0xFF10B981),
                               size: 24,
                             ),
@@ -253,7 +265,11 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          const Icon(Icons.access_time, size: 18, color: Color(0xFF6B7280)),
+                          const Icon(
+                            Icons.access_time,
+                            size: 18,
+                            color: Color(0xFF6B7280),
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             _currentTime,
@@ -267,7 +283,10 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now()),
+                        DateFormat(
+                          'EEEE, d MMMM yyyy',
+                          'id_ID',
+                        ).format(DateTime.now()),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF9CA3AF),
@@ -299,7 +318,11 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                       // ID Pegawai
                       const Row(
                         children: [
-                          Icon(Icons.person, color: Color(0xFF6366F1), size: 18),
+                          Icon(
+                            Icons.person,
+                            color: Color(0xFF6366F1),
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'ID Pegawai',
@@ -320,15 +343,24 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                           fillColor: Colors.grey[50],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide(color: Colors.grey[300]!, width: 2),
+                            borderSide: BorderSide(
+                              color: Colors.grey[300]!,
+                              width: 2,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide(color: Colors.grey[300]!, width: 2),
+                            borderSide: BorderSide(
+                              color: Colors.grey[300]!,
+                              width: 2,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
-                            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF6366F1),
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -337,7 +369,11 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                       // Lokasi
                       const Row(
                         children: [
-                          Icon(Icons.location_on, color: Color(0xFF6366F1), size: 18),
+                          Icon(
+                            Icons.location_on,
+                            color: Color(0xFF6366F1),
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Lokasi',
@@ -353,7 +389,8 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: _isLoadingLocation ? null : _getCurrentLocation,
+                          onPressed:
+                              _isLoadingLocation ? null : _getCurrentLocation,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF6366F1),
                             foregroundColor: Colors.white,
@@ -363,24 +400,25 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                             ),
                             elevation: 3,
                           ),
-                          child: _isLoadingLocation
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
+                          child:
+                              _isLoadingLocation
+                                  ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Text(
+                                    _currentPosition == null
+                                        ? 'Ambil Lokasi'
+                                        : '✓ Lokasi Terdeteksi',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                )
-                              : Text(
-                                  _currentPosition == null
-                                      ? 'Ambil Lokasi'
-                                      : '✓ Lokasi Terdeteksi',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
                         ),
                       ),
                       if (_currentPosition != null) ...[
@@ -421,7 +459,11 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                       // Foto
                       const Row(
                         children: [
-                          Icon(Icons.camera_alt, color: Color(0xFF6366F1), size: 18),
+                          Icon(
+                            Icons.camera_alt,
+                            color: Color(0xFF6366F1),
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Foto Absen',
@@ -440,7 +482,9 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
                           onPressed: _pickImage,
                           icon: const Icon(Icons.camera_alt),
                           label: Text(
-                            _imageFile == null ? 'Ambil Foto' : '✓ Foto Diambil',
+                            _imageFile == null
+                                ? 'Ambil Foto'
+                                : '✓ Foto Diambil',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -516,8 +560,10 @@ class _AbsenMasukPageState extends State<AbsenMasukPage> {
   }
 
   @override
-  void dispose() {
-    _idPegawaiController.dispose();
-    super.dispose();
-  }
+@override
+void dispose() {
+  _timer?.cancel(); // ← INI PENTING
+  _idPegawaiController.dispose();
+  super.dispose();
+}
 }

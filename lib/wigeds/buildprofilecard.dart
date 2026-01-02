@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 
 class BuildProfileCard extends StatelessWidget {
-  const BuildProfileCard({super.key});
+  final String? name;
+  final String? idname;
+  final int? role;
+
+  const BuildProfileCard({
+    super.key,
+    this.name,
+    this.idname,
+    this.role,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +33,9 @@ class BuildProfileCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [Color(0xFF0066CC), Color(0xFF00BFFF)],
                   ),
                 ),
@@ -64,24 +73,29 @@ class BuildProfileCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Korniawan Prabowo',
-            style: TextStyle(
+
+          /// NAMA USER
+          Text(
+            name ?? '-',
+            style: const TextStyle(
               color: Color(0xFF0A3D5C),
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 6),
+
+          /// ID + ROLE
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               color: const Color(0xFF0066CC).withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              'KRY010 • Senior',
-              style: TextStyle(
+            child: Text(
+              '${idname ?? '-'} • ${role == 3 ? 'Pekerja' : 'User'}',
+              style: const TextStyle(
                 color: Color(0xFF0066CC),
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

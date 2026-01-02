@@ -1,14 +1,12 @@
 import 'package:absensi_proyek/screens/proyek_display/list_proyek.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
 import 'package:absensi_proyek/screens/home_main.dart';
 import 'package:absensi_proyek/screens/userprofileview.dart';
 import 'package:absensi_proyek/screens/aktiviti.dart';
 import 'package:absensi_proyek/screens/from/form_izin.dart';
 import 'package:absensi_proyek/screens/from/from_cuti.dart';
-import 'package:absensi_proyek/screens/from/from_absen_masuk.dart';
-import 'package:absensi_proyek/screens/from/from_absen_keluar.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

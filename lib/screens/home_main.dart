@@ -1,5 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:absensi_proyek/service/Absensi.dart';
+import 'package:absensi_proyek/service/User.dart';
+import 'package:absensi_proyek/service/rekapabsensi.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeMain extends StatefulWidget {
   const HomeMain({super.key});
@@ -11,7 +17,8 @@ class HomeMain extends StatefulWidget {
 class _HomeMainState extends State<HomeMain> {
   late Timer _timer;
   late DateTime now;
-
+  late Future<GetUser> getuser;
+  late Future<RekapAbsensiResponse> rekapFuture;
   // Hari Indonesia
   final List<String> hariIndonesia = [
     'Senin',
@@ -44,9 +51,61 @@ class _HomeMainState extends State<HomeMain> {
   String hari = '';
   String bulannow = '';
 
+  Future<GetUser> getUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final tokentes =
+        'Bearer 1|j2vGuYXvPFbQVLK9McP1xwHglzXdHKwdayPCK5qb168c2f6f';
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:8000/api/profile'),
+      headers: {
+        'Authorization': 'Bearer $tokentes',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return GetUser.fromJson(data['data']); // kalau API Laravel pakai data
+    } else {
+      throw Exception('Gagal mengambil data user');
+    }
+  }
+
+  // Absensi
+  Future<RekapAbsensiResponse> getRekapAbsensi() async {
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:8000/api/absen/user/semua'),
+      headers: {
+        'Authorization':
+            'Bearer 1|j2vGuYXvPFbQVLK9McP1xwHglzXdHKwdayPCK5qb168c2f6f',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return RekapAbsensiResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Gagal mengambil rekap absensi');
+    }
+  }
+
+  Function getTotalhadir = (List<Absensi> absen) {
+    int hadir = 0;
+
+    for (var i = 0; i < absen.length; i++) {
+      if (absen[i].keteranganAbsensi == 'hadir') {
+        hadir++;
+      }
+    }
+    return hadir;
+  };
   @override
   void initState() {
     super.initState();
+    getuser = getUser();
+    rekapFuture = getRekapAbsensi();
     _updateWaktu();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) _updateWaktu();
@@ -72,6 +131,7 @@ class _HomeMainState extends State<HomeMain> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _timer.cancel();
     super.dispose();
   }
@@ -103,7 +163,23 @@ class _HomeMainState extends State<HomeMain> {
                   child: Column(
                     children: [
                       // User Card
-                      _buildUserCard(),
+                      FutureBuilder<GetUser>(
+                        future: getuser,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else if (!snapshot.hasData) {
+                            return const Text('Data user kosong');
+                          }
+
+                          return _buildUserCard(user: snapshot.data!);
+                        },
+                      ),
+
+                      SizedBox(height: size.height * 0.02),
                       // Clock & Date Card
                       _buildClockCard(),
                     ],
@@ -120,11 +196,13 @@ class _HomeMainState extends State<HomeMain> {
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric( horizontal:30 , vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 10,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-     
                         // Rekap Absensi Card
                         const Text(
                           'Rekap Absensi Bulan Ini',
@@ -148,7 +226,7 @@ class _HomeMainState extends State<HomeMain> {
     );
   }
 
-  Widget _buildUserCard() {
+  Widget _buildUserCard({required GetUser user}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -164,60 +242,30 @@ class _HomeMainState extends State<HomeMain> {
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0066CC), Color(0xFF00BFFF)],
-              ),
-            ),
-            child: const CircleAvatar(
-              radius: 32,
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: 40, color: Color(0xFF0066CC)),
-            ),
-          ),
+          const CircleAvatar(radius: 32, child: Icon(Icons.person, size: 40)),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
+              children: [
+                const Text(
                   'Selamat Datang! 👋',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Andi Saputra',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0A3D5C),
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Karyawan • ID: KRY001',
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  user.name, // ✅ nama dari API
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'ID Pegawai: ${user.idPegawai}', // ✅ id_pegawai dari API
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0066CC).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.notifications_outlined,
-              color: Color(0xFF0066CC),
-              size: 24,
             ),
           ),
         ],
@@ -492,60 +540,99 @@ class _HomeMainState extends State<HomeMain> {
   }
 
   Widget _buildRekapCard({required String bulan}) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+    return FutureBuilder<RekapAbsensiResponse>(
+      future: rekapFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (!snapshot.hasData || snapshot.data!.absensi.isEmpty) {
+          return const Text(
+            'Belum ada data absensi pada bulan ini.',
+            style: TextStyle(color: Colors.grey),
+          );
+        }
+
+        final absen = snapshot.data!;
+        final namaProyek = absen.absensi[0].proyek.namaProyek ?? '';
+        final totalizin = absen.izin.length;
+        final totalHadir = absen.absensi;
+        final totalCuti = absen.totalCuti;
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Total Kehadiran',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    bulan,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               Text(
-                'Total Kehadiran',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w500,
+                'Nama Proyek: ${namaProyek}' ?? '',
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF1F2937),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              Text(bulan, style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  _buildStatItem(
+                    label: 'Hadir',
+                    value: getTotalhadir(totalHadir).toString() ?? '',
+                    icon: Icons.check_circle_rounded,
+                    color: const Color(0xFF00C897),
+                  ),
+                  _buildStatItem(
+                    label: 'Izin',
+                    value: totalizin.toString(),
+                    icon: Icons.event_note_rounded,
+                    color: const Color(0xFFFF6B35),
+                  ),
+                  _buildStatItem(
+                    label: 'Cuti',
+                    value: totalCuti.toString(),
+                    icon: Icons.beach_access_rounded,
+                    color: const Color(0xFF0066CC),
+                  ),
+                ],
+              ),
             ],
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              _buildStatItem(
-                label: 'Hadir',
-                value: '22',
-                icon: Icons.check_circle_rounded,
-                color: const Color(0xFF00C897),
-              ),
-              _buildStatItem(
-                label: 'Izin',
-                value: '2',
-                icon: Icons.event_note_rounded,
-                color: const Color(0xFFFF6B35),
-              ),
-              _buildStatItem(
-                label: 'Cuti',
-                value: '1',
-                icon: Icons.beach_access_rounded,
-                color: const Color(0xFF0066CC),
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -1,27 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Form Izin',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF0A3D5C),
-        scaffoldBackgroundColor: const Color(0xFF0A3D5C),
-      ),
-      home: const FormIzinPage(),
-    );
-  }
-}
-
 class FormIzinPage extends StatefulWidget {
   const FormIzinPage({super.key});
 
@@ -227,7 +206,7 @@ class _FormIzinPageState extends State<FormIzinPage> {
           side: const BorderSide(color: Colors.white),
         ),
         child: Text(
-          date == null ? label : DateFormat('dd/MM/yyyy').format(date),
+          date == null ? label : DateFormat('dd-MM-yyyy').format(date),
           style: const TextStyle(color: Colors.white),
         ),
       ),

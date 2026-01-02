@@ -4,7 +4,6 @@ import 'package:absensi_proyek/wigeds/error.dart';
 import 'package:absensi_proyek/wigeds/menucard.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 // Model Proyek
 class Proyek {
   final int id;
@@ -30,7 +29,7 @@ class Proyek {
       namaProyek: json['nama_proyek'] ?? '',
       lokasiProyek: json['lokasi_proyek'] ?? '',
       deskripsi: json['deskripsi'] ?? '',
-      logProyek: double.parse(json['log_proyek'].toString()),
+      logProyek: double.parse(json['long_proyek'].toString()),
       latProyek: double.parse(json['lat_proyek'].toString()),
     );
   }
@@ -111,18 +110,17 @@ class _ListProyekScreenState extends State<ListProyekScreen> {
     });
   }
 
-  Future<void> _openGoogleMaps(double lat, double long) async {
-    final url = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$lat,$long',
-    );
+Future<void> _openGoogleMaps(double lat, double long) async {
+  final url = Uri.parse(
+    'https://www.google.com/maps/search/?api=1&query=$lat,$long',
+  );
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      ErrorSnackbar.show(context, ('Tidak bisa membuka Google Maps'));
-    }
+  if (await canLaunchUrl(url)) {
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  } else {
+    ErrorSnackbar.show(context,('Tidak bisa membuka Google Maps'));
   }
-
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -661,7 +659,7 @@ class _ListProyekScreenState extends State<ListProyekScreen> {
                         Container(
                           height: MediaQuery.of(context).size.height * 0.05,
                           width: MediaQuery.of(context).size.width,
-
+                     
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,

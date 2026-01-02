@@ -2,7 +2,15 @@ import 'package:absensi_proyek/wigeds/buildstatitem.dart';
 import 'package:flutter/material.dart';
 
 class BuildStatCard extends StatelessWidget {
-  const BuildStatCard({super.key});
+  final int totalHadir;
+  final int totalIzin;
+  final int totalCuti;
+  const BuildStatCard({
+    super.key,
+    required this.totalHadir,
+    required this.totalIzin,
+    required this.totalCuti,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +55,10 @@ class BuildStatCard extends StatelessWidget {
                 child: BuildStatItem(
                   icon: Icons.check_circle_rounded,
                   label: 'Hadir',
-                  value: '22',
+                  value:
+                      totalHadir.toString() == null
+                          ? '0'
+                          : totalHadir.toString(),
                   color: const Color(0xFF00C897),
                 ),
               ),
@@ -55,7 +66,7 @@ class BuildStatCard extends StatelessWidget {
                 child: BuildStatItem(
                   icon: Icons.event_note_rounded,
                   label: 'Izin',
-                  value: '2',
+                  value: totalIzin.toString() == null ? '0' : totalIzin.toString(),
                   color: const Color(0xFFFF6B35),
                 ),
               ),
@@ -63,7 +74,7 @@ class BuildStatCard extends StatelessWidget {
                 child: BuildStatItem(
                   icon: Icons.beach_access_rounded,
                   label: 'Cuti',
-                  value: '1',
+                  value: totalCuti.toString() == null ? '0' : totalCuti.toString(),
                   color: const Color(0xFF0066CC),
                 ),
               ),
