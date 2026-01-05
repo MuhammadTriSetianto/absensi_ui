@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class BuildProfileCard extends StatelessWidget {
   final String? name;
   final String? idname;
-  final int? role;
+  final String? image;
+  final String? role;
 
   const BuildProfileCard({
     super.key,
     this.name,
+    this.image,
     this.idname,
     this.role,
   });
@@ -46,11 +48,24 @@ class BuildProfileCard extends StatelessWidget {
                     color: Colors.grey[200],
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.person_rounded,
-                    size: 50,
-                    color: Colors.grey[400],
-                  ),
+                  child:
+                      (image != null && image!.isNotEmpty)
+                          ? Image.network(
+                            image!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.person_rounded,
+                                size: 50,
+                                color: Colors.white,
+                              );
+                            },
+                          )
+                          : const Icon(
+                            Icons.person_rounded,
+                            size: 50,
+                            color: Colors.white,
+                          ),
                 ),
               ),
               Positioned(

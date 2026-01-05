@@ -1,8 +1,9 @@
 import 'dart:convert';
 
-import 'package:absensi_proyek/service/Absensi.dart';
-import 'package:absensi_proyek/service/rekapabsensi.dart';
-import 'package:absensi_proyek/service/user.dart';
+import 'package:absensi_proyek/screens/from/from_edit_profile.dart';
+import 'package:absensi_proyek/Model/Absensi.dart';
+import 'package:absensi_proyek/Model/RekapAbsensi.dart';
+import 'package:absensi_proyek/Model/User.dart';
 import 'package:absensi_proyek/wigeds/buildheader.dart';
 import 'package:absensi_proyek/wigeds/buildinfocard.dart';
 import 'package:absensi_proyek/wigeds/buildprofilecard.dart';
@@ -20,8 +21,9 @@ class UserProfileView extends StatefulWidget {
 }
 
 class _UserProfileViewState extends State<UserProfileView> {
- late Future<RekapAbsensiResponse> rekapFuture;
+  late Future<RekapAbsensiResponse> rekapFuture;
   late Future<GetUser> getuser;
+  late String getToken;
 
   @override
 
@@ -31,6 +33,11 @@ class _UserProfileViewState extends State<UserProfileView> {
     rekapFuture = getRekapAbsensi();
   }
 
+  // Future <void> getToken() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   getToken = prefs.getString('token') ?? '';
+  // }
+
   Future<GetUser> getUser() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -39,7 +46,7 @@ class _UserProfileViewState extends State<UserProfileView> {
       Uri.parse('http://10.0.2.2:8000/api/profile'),
       headers: {
         'Authorization':
-            'Bearer 1|j2vGuYXvPFbQVLK9McP1xwHglzXdHKwdayPCK5qb168c2f6f',
+            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
         'Accept': 'application/json',
       },
     );
@@ -57,7 +64,7 @@ class _UserProfileViewState extends State<UserProfileView> {
       Uri.parse('http://10.0.2.2:8000/api/absen/user/semua'),
       headers: {
         'Authorization':
-            'Bearer 1|j2vGuYXvPFbQVLK9McP1xwHglzXdHKwdayPCK5qb168c2f6f',
+            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
         'Accept': 'application/json',
       },
     );
@@ -134,8 +141,9 @@ class _UserProfileViewState extends State<UserProfileView> {
                             /// PROFILE CARD (UI TIDAK DIUBAH)
                             BuildProfileCard(
                               name: userData.name,
+                              image: userData.image,
                               idname: userData.idPegawai,
-                              role: userData.id_role,
+                              role: userData.idRole,
                             ),
 
                             const SizedBox(height: 20),
@@ -202,7 +210,15 @@ class _UserProfileViewState extends State<UserProfileView> {
                                     icon: Icons.edit_rounded,
                                     label: 'Edit Profil',
                                     color: const Color(0xFF0066CC),
-                                    onTap: () {},
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const EditProfile(token:"1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec"),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 12),

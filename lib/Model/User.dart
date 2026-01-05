@@ -1,20 +1,21 @@
 class GetUser {
   final String idPegawai;
   final String name;
-  final String noHp;
   final String email;
+  final String noHp;
   final String alamat;
-  final int id_role;
+  final String idRole;
+  final String? image;
 
   GetUser({
     required this.idPegawai,
     required this.name,
-    required this.noHp,
-    required this.id_role,
     required this.email,
+    required this.noHp,
     required this.alamat,
+    required this.idRole,
+    this.image,
   });
-
   // JSON → Object
  factory GetUser.fromJson(Map<String, dynamic> json) {
   return GetUser(
@@ -22,8 +23,9 @@ class GetUser {
     name: json['name'] ?? '',
     noHp: json['no_hp'] ?? '',
     email: json['email'] ?? '',
+    image: json['image'] ?? '',
     alamat: json['alamat'] ?? '',
-    id_role: json['id_role'] ?? '',
+    idRole: json['id_role'] ?? '',
 
   );
 }

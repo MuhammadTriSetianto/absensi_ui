@@ -5,7 +5,7 @@ import 'package:absensi_proyek/screens/home_main.dart';
 import 'package:absensi_proyek/screens/userprofileview.dart';
 import 'package:absensi_proyek/screens/aktiviti.dart';
 import 'package:absensi_proyek/screens/from/form_izin.dart';
-import 'package:absensi_proyek/screens/from/from_cuti.dart';
+import 'package:absensi_proyek/screens/from/from_cuti_screen.dart';
 
 
 void main() async {

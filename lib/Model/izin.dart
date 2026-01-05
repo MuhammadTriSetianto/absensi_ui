@@ -1,4 +1,4 @@
-import 'Proyek.dart';
+import '../Model/Proyek.dart';
 
 class Izin {
   final int idIzin;

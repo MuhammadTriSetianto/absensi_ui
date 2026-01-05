@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:absensi_proyek/service/Absensi.dart';
-import 'package:absensi_proyek/service/User.dart';
-import 'package:absensi_proyek/service/rekapabsensi.dart';
+import 'package:absensi_proyek/Model/Absensi.dart';
+import 'package:absensi_proyek/Model/User.dart';
+import 'package:absensi_proyek/Model/RekapAbsensi.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -56,7 +56,7 @@ class _HomeMainState extends State<HomeMain> {
     final token = prefs.getString('token');
 
     final tokentes =
-        'Bearer 1|j2vGuYXvPFbQVLK9McP1xwHglzXdHKwdayPCK5qb168c2f6f';
+        'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec';
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/profile'),
       headers: {
@@ -79,7 +79,7 @@ class _HomeMainState extends State<HomeMain> {
       Uri.parse('http://10.0.2.2:8000/api/absen/user/semua'),
       headers: {
         'Authorization':
-            'Bearer 1|j2vGuYXvPFbQVLK9McP1xwHglzXdHKwdayPCK5qb168c2f6f',
+            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
         'Accept': 'application/json',
       },
     );
@@ -242,7 +242,19 @@ class _HomeMainState extends State<HomeMain> {
       ),
       child: Row(
         children: [
-          const CircleAvatar(radius: 32, child: Icon(Icons.person, size: 40)),
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: Colors.grey.shade300,
+            backgroundImage:
+                (user.image != null && user.image!.isNotEmpty)
+                    ? NetworkImage(user.image!)
+                    : null,
+            child:
+                (user.image == null || user.image!.isEmpty)
+                    ? const Icon(Icons.person, size: 40, color: Colors.white)
+                    : null,
+          ),
+
           const SizedBox(width: 16),
           Expanded(
             child: Column(

@@ -3,28 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-class FormIzinScreen extends StatefulWidget {
-  const FormIzinScreen({Key? key}) : super(key: key);
+class FormCutiScreen extends StatefulWidget {
+  const FormCutiScreen({Key? key}) : super(key: key);
 
   @override
-  State<FormIzinScreen> createState() => _FormIzinScreenState();
+  State<FormCutiScreen> createState() => _FormCutiScreenState();
 }
 
-class _FormIzinScreenState extends State<FormIzinScreen> {
+class _FormCutiScreenState extends State<FormCutiScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _subjekController = TextEditingController();
   final TextEditingController _keteranganController = TextEditingController();
 
-  String? _jenisIzin;
-  String? _idProyek;
-  String? _idPegawai;
-
   DateTime? _tanggalMulai;
   DateTime? _tanggalSelesai;
   PlatformFile? _pickedFile;
 
+  String? _idProyek;
   bool _loading = true;
   bool _submitting = false;
 
@@ -35,6 +33,9 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
   }
 
   Future<void> _loadUserProyek() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/usersproyek'),
       headers: {
@@ -48,17 +49,28 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
       final body = jsonDecode(response.body);
       setState(() {
         _idProyek = body['data'][0]['id_proyek'].toString();
-        _idPegawai = body['data'][0]['id_pegawai'];
         _loading = false;
       });
+    } else {
+      _showSnackBar('Gagal mengambil data proyek', Colors.red);
     }
   }
 
-  Future<void> _selectDate(bool start) async {
+  Future<void> _selectDate(bool isStart) async {
+    final DateTime firstDate =
+        isStart ? DateTime.now() : (_tanggalMulai ?? DateTime.now());
+
+    final DateTime initialDate =
+        isStart
+            ? DateTime.now()
+            : (_tanggalMulai != null && _tanggalMulai!.isAfter(DateTime.now())
+                ? _tanggalMulai!
+                : DateTime.now());
+
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2023),
+      initialDate: initialDate.isBefore(firstDate) ? firstDate : initialDate,
+      firstDate: firstDate,
       lastDate: DateTime(2030),
       builder: (context, child) {
         return Theme(
@@ -77,7 +89,14 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
 
     if (picked != null) {
       setState(() {
-        start ? _tanggalMulai = picked : _tanggalSelesai = picked;
+        if (isStart) {
+          _tanggalMulai = picked;
+          if (_tanggalSelesai != null && _tanggalSelesai!.isBefore(picked)) {
+            _tanggalSelesai = null;
+          }
+        } else {
+          _tanggalSelesai = picked;
+        }
       });
     }
   }
@@ -87,7 +106,12 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
       type: FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
     );
+
     if (result != null) {
+      if (result.files.single.size > 2 * 1024 * 1024) {
+        _showSnackBar('Ukuran file maksimal 2MB', Colors.orange);
+        return;
+      }
       setState(() => _pickedFile = result.files.single);
     }
   }
@@ -95,21 +119,21 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_tanggalMulai == null || _tanggalSelesai == null) {
-      _showMessage('Tanggal wajib diisi', Colors.orange);
-      return;
-    }
-
-    if (_pickedFile == null) {
-      _showMessage('File surat izin wajib diupload', Colors.orange);
+    if (_tanggalMulai == null ||
+        _tanggalSelesai == null ||
+        _pickedFile == null) {
+      _showSnackBar('Semua field wajib diisi', Colors.orange);
       return;
     }
 
     setState(() => _submitting = true);
 
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://10.0.2.2:8000/api/izin/kerja'),
+      Uri.parse('http://10.0.2.2:8000/api/cuti/buat_cuti'),
     );
 
     request.headers.addAll({
@@ -119,31 +143,26 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
     });
 
     request.fields.addAll({
-      'id_pegawai': _idPegawai!,
       'id_proyek': _idProyek!,
-      'jenis_izin': _jenisIzin!,
-      'subjek_izin': _subjekController.text,
-      'keterangan_izin': _keteranganController.text,
-      'tanggal_mulai': _tanggalMulai!.toIso8601String(),
-      'tanggal_selesai': _tanggalSelesai!.toIso8601String(),
+      'subjek_cuti': _subjekController.text,
+      'keterangan_cuti': _keteranganController.text,
+      'tanggal_mulai': DateFormat('yyyy-MM-dd').format(_tanggalMulai!),
+      'tanggal_selesai': DateFormat('yyyy-MM-dd').format(_tanggalSelesai!),
     });
 
     request.files.add(
-      await http.MultipartFile.fromPath(
-        'suratizin',
-        _pickedFile!.path!,
-      ),
+      await http.MultipartFile.fromPath('surat_cuti', _pickedFile!.path!),
     );
 
     final response = await request.send();
+    final body = await response.stream.bytesToString();
 
     setState(() => _submitting = false);
 
     if (response.statusCode == 201) {
-      _showMessage('Izin berhasil diajukan', Colors.green);
+      _showSnackBar('Pengajuan cuti berhasil', Colors.green);
       _formKey.currentState!.reset();
       setState(() {
-        _jenisIzin = null;
         _pickedFile = null;
         _tanggalMulai = null;
         _tanggalSelesai = null;
@@ -151,11 +170,15 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
         _keteranganController.clear();
       });
     } else {
-      _showMessage('Gagal mengajukan izin', Colors.red);
+      debugPrint(body);
+      _showSnackBar(
+        jsonDecode(body)['message'] ?? 'Gagal mengajukan cuti',
+        Colors.red,
+      );
     }
   }
 
-  void _showMessage(String msg, Color color) {
+  void _showSnackBar(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -170,15 +193,13 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
       ),
     );
   }
 
-  InputDecoration _decor(String label, IconData icon, {String? hint}) {
+  InputDecoration _inputDecor(String label, IconData icon, {String? hint}) {
     return InputDecoration(
       labelText: label,
       hintText: hint,
@@ -203,6 +224,11 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
+  }
+
+  int _calculateDuration() {
+    if (_tanggalMulai == null || _tanggalSelesai == null) return 0;
+    return _tanggalSelesai!.difference(_tanggalMulai!).inDays + 1;
   }
 
   @override
@@ -238,16 +264,20 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
         elevation: 0,
         backgroundColor: const Color(0xFF003554),
         title: const Text(
-          'Pengajuan Izin',
+          'Pengajuan Cuti',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 20,
-            color:Color(0xFFFFFFFF),
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20,color: Color(0xFFFFFFFF),),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 20,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -259,7 +289,7 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Section
+              // Header Card
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -286,7 +316,7 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
-                        Icons.description_outlined,
+                        Icons.beach_access,
                         color: Colors.white,
                         size: 32,
                       ),
@@ -297,7 +327,7 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Form Pengajuan',
+                            'Ajukan Cuti',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -306,7 +336,7 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Lengkapi data izin Anda',
+                            'Isi formulir dengan lengkap',
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -323,7 +353,7 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
 
               // Form Section
               const Text(
-                'Informasi Izin',
+                'Detail Cuti',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -347,52 +377,30 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                 ),
                 child: Column(
                   children: [
-                    DropdownButtonFormField<String>(
-                      value: _jenisIzin,
-                      decoration: _decor(
-                        'Jenis Izin',
-                        Icons.category_outlined,
-                        hint: 'Pilih jenis izin',
-                      ),
-                      dropdownColor: Colors.white,
-                      icon: const Icon(Icons.keyboard_arrow_down,
-                          color: Color(0xFF003554)),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'sakit',
-                          child: Text('Sakit'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'lainnya',
-                          child: Text('Lainnya'),
-                        ),
-                      ],
-                      onChanged: (v) => setState(() => _jenisIzin = v),
-                      validator: (v) =>
-                          v == null ? 'Jenis izin wajib dipilih' : null,
-                    ),
-                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _subjekController,
-                      decoration: _decor(
-                        'Subjek Izin',
+                      decoration: _inputDecor(
+                        'Subjek Cuti',
                         Icons.title_outlined,
-                        hint: 'Masukkan subjek izin',
+                        hint: 'Contoh: Cuti Tahunan',
                       ),
                       style: const TextStyle(fontSize: 15),
-                      validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
+                      validator:
+                          (v) => v!.isEmpty ? 'Subjek Cuti wajib diisi' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _keteranganController,
                       maxLines: 4,
-                      decoration: _decor(
-                        'Keterangan',
+                      decoration: _inputDecor(
+                        'Keterangan Cuti',
                         Icons.notes_outlined,
-                        hint: 'Jelaskan alasan izin Anda',
+                        hint: 'Jelaskan keperluan cuti Anda',
                       ),
                       style: const TextStyle(fontSize: 15),
-                      validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
+                      validator:
+                          (v) =>
+                              v!.isEmpty ? 'Keterangan Cuti wajib diisi' : null,
                     ),
                   ],
                 ),
@@ -402,7 +410,7 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
 
               // Date Section
               const Text(
-                'Periode Izin',
+                'Periode Cuti',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -462,17 +470,21 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                                   const SizedBox(height: 4),
                                   Text(
                                     _tanggalMulai == null
-                                        ? 'Pilih tanggal mulai'
-                                        : DateFormat('EEEE, dd MMMM yyyy', 'id_ID')
-                                            .format(_tanggalMulai!),
+                                        ? 'Pilih tanggal mulai cuti'
+                                        : DateFormat(
+                                          'EEEE, dd MMMM yyyy',
+                                          'id_ID',
+                                        ).format(_tanggalMulai!),
                                     style: TextStyle(
-                                      color: _tanggalMulai == null
-                                          ? Colors.grey
-                                          : const Color(0xFF003554),
+                                      color:
+                                          _tanggalMulai == null
+                                              ? Colors.grey
+                                              : const Color(0xFF003554),
                                       fontSize: 15,
-                                      fontWeight: _tanggalMulai == null
-                                          ? FontWeight.normal
-                                          : FontWeight.w600,
+                                      fontWeight:
+                                          _tanggalMulai == null
+                                              ? FontWeight.normal
+                                              : FontWeight.w600,
                                     ),
                                   ),
                                 ],
@@ -525,17 +537,21 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                                   const SizedBox(height: 4),
                                   Text(
                                     _tanggalSelesai == null
-                                        ? 'Pilih tanggal selesai'
-                                        : DateFormat('EEEE, dd MMMM yyyy', 'id_ID')
-                                            .format(_tanggalSelesai!),
+                                        ? 'Pilih tanggal selesai cuti'
+                                        : DateFormat(
+                                          'EEEE, dd MMMM yyyy',
+                                          'id_ID',
+                                        ).format(_tanggalSelesai!),
                                     style: TextStyle(
-                                      color: _tanggalSelesai == null
-                                          ? Colors.grey
-                                          : const Color(0xFF003554),
+                                      color:
+                                          _tanggalSelesai == null
+                                              ? Colors.grey
+                                              : const Color(0xFF003554),
                                       fontSize: 15,
-                                      fontWeight: _tanggalSelesai == null
-                                          ? FontWeight.normal
-                                          : FontWeight.w600,
+                                      fontWeight:
+                                          _tanggalSelesai == null
+                                              ? FontWeight.normal
+                                              : FontWeight.w600,
                                     ),
                                   ),
                                 ],
@@ -553,6 +569,40 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                   ],
                 ),
               ),
+
+              // Duration Info
+              if (_tanggalMulai != null && _tanggalSelesai != null)
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF003554).withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF003554).withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: Color(0xFF003554),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Durasi cuti: ${_calculateDuration()} hari',
+                          style: const TextStyle(
+                            color: Color(0xFF003554),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               const SizedBox(height: 24),
 
@@ -576,9 +626,10 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: _pickedFile == null
-                          ? const Color(0xFFE0E8F0)
-                          : const Color(0xFF003554),
+                      color:
+                          _pickedFile == null
+                              ? const Color(0xFFE0E8F0)
+                              : const Color(0xFF003554),
                       width: 2,
                       style: BorderStyle.solid,
                     ),
@@ -595,9 +646,10 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: _pickedFile == null
-                              ? const Color(0xFFF5F9FC)
-                              : const Color(0xFF003554).withOpacity(0.1),
+                          color:
+                              _pickedFile == null
+                                  ? const Color(0xFFF5F9FC)
+                                  : const Color(0xFF003554).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -605,22 +657,24 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                               ? Icons.cloud_upload_outlined
                               : Icons.check_circle_outline,
                           size: 40,
-                          color: _pickedFile == null
-                              ? Colors.grey
-                              : const Color(0xFF003554),
+                          color:
+                              _pickedFile == null
+                                  ? Colors.grey
+                                  : const Color(0xFF003554),
                         ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         _pickedFile == null
-                            ? 'Upload Surat Izin'
+                            ? 'Upload Surat Cuti'
                             : _pickedFile!.name,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: _pickedFile == null
-                              ? Colors.grey
-                              : const Color(0xFF003554),
+                          color:
+                              _pickedFile == null
+                                  ? Colors.grey
+                                  : const Color(0xFF003554),
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 2,
@@ -629,12 +683,9 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                       const SizedBox(height: 4),
                       Text(
                         _pickedFile == null
-                            ? 'JPG, PNG, atau PDF (Maks. 5MB)'
+                            ? 'JPG, PNG, atau PDF (Maks. 2MB)'
                             : 'Tap untuk mengganti file',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -658,30 +709,32 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: _submitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.send, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Kirim Pengajuan',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                  child:
+                      _submitting
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
                               ),
                             ),
-                          ],
-                        ),
+                          )
+                          : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.send, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Ajukan Cuti',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                 ),
               ),
 

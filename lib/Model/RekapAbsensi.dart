@@ -1,5 +1,5 @@
-import 'Absensi.dart';
-import 'Izin.dart';
+import '../Model/Absensi.dart';
+import '../Model/Izin.dart';
 
 class RekapAbsensiResponse {
   final List<Absensi> absensi;

@@ -1,39 +1,13 @@
+import 'dart:convert';
+
+import 'package:absensi_proyek/Model/Proyek.dart';
 import 'package:absensi_proyek/screens/from/from_absen_keluar.dart';
 import 'package:absensi_proyek/screens/from/from_absen_masuk.dart';
 import 'package:absensi_proyek/wigeds/error.dart';
 import 'package:absensi_proyek/wigeds/menucard.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-// Model Proyek
-class Proyek {
-  final int id;
-  final String namaProyek;
-  final String lokasiProyek;
-  final String deskripsi;
-  final double logProyek; // longitude
-  final double latProyek; // latitude
-
-  Proyek({
-    required this.id,
-    required this.namaProyek,
-    required this.lokasiProyek,
-    required this.deskripsi,
-    required this.logProyek,
-    required this.latProyek,
-  });
-
-  // Factory untuk parsing dari JSON API
-  factory Proyek.fromJson(Map<String, dynamic> json) {
-    return Proyek(
-      id: json['id'] ?? 0,
-      namaProyek: json['nama_proyek'] ?? '',
-      lokasiProyek: json['lokasi_proyek'] ?? '',
-      deskripsi: json['deskripsi'] ?? '',
-      logProyek: double.parse(json['long_proyek'].toString()),
-      latProyek: double.parse(json['lat_proyek'].toString()),
-    );
-  }
-}
 
 class ListProyekScreen extends StatefulWidget {
   const ListProyekScreen({Key? key}) : super(key: key);
@@ -43,84 +17,79 @@ class ListProyekScreen extends StatefulWidget {
 }
 
 class _ListProyekScreenState extends State<ListProyekScreen> {
-  // Data dummy untuk demo (nanti ganti dengan data dari API)
-  final List<Proyek> _proyekList = [
-    Proyek(
-      id: 1,
-      namaProyek: 'Pembangunan Mall Central Park',
-      lokasiProyek: 'Jakarta Barat, DKI Jakarta',
-      deskripsi:
-          'Proyek pembangunan mall dengan luas 50.000 m2 yang dilengkapi dengan fasilitas modern dan area parkir bertingkat',
-      logProyek: 106.7903,
-      latProyek: -6.1777,
-    ),
-    Proyek(
-      id: 2,
-      namaProyek: 'Renovasi Gedung Perkantoran',
-      lokasiProyek: 'Sudirman, Jakarta Pusat',
-      deskripsi:
-          'Renovasi total gedung perkantoran 20 lantai termasuk sistem MEP dan interior modern',
-      logProyek: 106.8229,
-      latProyek: -6.2088,
-    ),
-    Proyek(
-      id: 3,
-      namaProyek: 'Konstruksi Jembatan Tol',
-      lokasiProyek: 'Bekasi Timur, Jawa Barat',
-      deskripsi:
-          'Pembangunan jembatan layang tol sepanjang 2.5 km dengan teknologi pratekan',
-      logProyek: 107.0156,
-      latProyek: -6.2383,
-    ),
-    Proyek(
-      id: 4,
-      namaProyek: 'Perumahan Green Valley',
-      lokasiProyek: 'Tangerang Selatan, Banten',
-      deskripsi:
-          'Pembangunan komplek perumahan eksklusif dengan konsep green living dan smart home system',
-      logProyek: 106.6745,
-      latProyek: -6.2914,
-    ),
-  ];
+  late Future<List<Proyek>> futureProyek;
 
+  List<Proyek> _proyekList = [];
   List<Proyek> _filteredProyek = [];
+
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _filteredProyek = _proyekList;
+    futureProyek = fetchProyek();
   }
 
+  // ================= FETCH API =================
+  Future<List<Proyek>> fetchProyek() async {
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:8000/api/usersproyek/user'),
+      headers: {
+        'Authorization':
+            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      final List data = json['data'];
+
+      /// ⬇️ AMBIL KHUSUS bagian "proyek"
+      final proyekList =
+          data.map((item) => Proyek.fromJson(item['proyek'])).toList();
+
+      _proyekList = proyekList;
+      _filteredProyek = proyekList;
+
+      return proyekList;
+    } else {
+      throw Exception('Gagal mengambil data proyek');
+    }
+  }
+
+  // ================= SEARCH =================
   void _filterProyek(String query) {
     setState(() {
       if (query.isEmpty) {
         _filteredProyek = _proyekList;
       } else {
-        _filteredProyek =
-            _proyekList.where((proyek) {
-              return proyek.namaProyek.toLowerCase().contains(
+        _filteredProyek = _proyekList.where((proyek) {
+          return proyek.namaProyek.toLowerCase().contains(
                     query.toLowerCase(),
                   ) ||
-                  proyek.lokasiProyek.toLowerCase().contains(
+              proyek.lokasiProyek.toLowerCase().contains(
                     query.toLowerCase(),
                   );
-            }).toList();
+        }).toList();
       }
     });
   }
 
-Future<void> _openGoogleMaps(double lat, double long) async {
-  final url = Uri.parse(
-    'https://www.google.com/maps/search/?api=1&query=$lat,$long',
-  );
+  // ================= MAPS =================
+  Future<void> _openGoogleMaps(double lat, double long) async {
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$long',
+    );
 
-  if (await canLaunchUrl(url)) {
-    await launchUrl(url, mode: LaunchMode.externalApplication);
-  } else {
-    ErrorSnackbar.show(context,('Tidak bisa membuka Google Maps'));
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      ErrorSnackbar.show(context, 'Tidak bisa membuka Google Maps');
+    }
   }
-}
+
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,99 +103,114 @@ Future<void> _openGoogleMaps(double lat, double long) async {
         backgroundColor: const Color(0xFF2196F3),
         foregroundColor: Colors.white,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [const Color(0xFF2196F3).withOpacity(0.05), Colors.white],
-          ),
-        ),
-        child: Column(
-          children: [
-            // Search Bar
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _filterProyek,
-                decoration: InputDecoration(
-                  hintText: 'Cari nama atau lokasi proyek...',
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xFF2196F3),
-                  ),
-                  suffixIcon:
-                      _searchController.text.isNotEmpty
-                          ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              _filterProyek('');
-                            },
-                          )
-                          : null,
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF2196F3),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+      body: FutureBuilder<List<Proyek>>(
+        future: futureProyek,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            // Info Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${_filteredProyek.length} Proyek',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF333333),
-                    ),
-                  ),
+          if (snapshot.hasError) {
+            return Center(child: Text(snapshot.error.toString()));
+          }
+
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF2196F3).withOpacity(0.05),
+                  Colors.white,
                 ],
               ),
             ),
+            child: Column(
+              children: [
+                // Search Bar
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _filterProyek,
+                    decoration: InputDecoration(
+                      hintText: 'Cari nama atau lokasi proyek...',
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Color(0xFF2196F3),
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _filterProyek('');
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2196F3),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
 
-            // List Proyek
-            Expanded(
-              child:
-                  _filteredProyek.isEmpty
+                // Info Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${_filteredProyek.length} Proyek',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF333333),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // List Proyek
+                Expanded(
+                  child: _filteredProyek.isEmpty
                       ? _buildEmptyState()
                       : ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          itemCount: _filteredProyek.length,
+                          itemBuilder: (context, index) {
+                            return _buildProyekCard(_filteredProyek[index]);
+                          },
                         ),
-                        itemCount: _filteredProyek.length,
-                        itemBuilder: (context, index) {
-                          return _buildProyekCard(_filteredProyek[index]);
-                        },
-                      ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
+  // ================= CARD =================
   Widget _buildProyekCard(Proyek proyek) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -334,7 +318,7 @@ Future<void> _openGoogleMaps(double lat, double long) async {
                     child: _buildInfoChip(
                       icon: Icons.navigation,
                       label: 'Long',
-                      value: proyek.logProyek.toStringAsFixed(4),
+                      value: proyek.longProyek.toStringAsFixed(4),
                       color: const Color(0xFF3B82F6),
                     ),
                   ),
@@ -348,7 +332,10 @@ Future<void> _openGoogleMaps(double lat, double long) async {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        _openMaps(proyek);
+                        _openGoogleMaps(
+                          proyek.latProyek,
+                          proyek.longProyek,
+                        );
                       },
                       icon: const Icon(Icons.map, size: 18),
                       label: const Text('Lihat Lokasi'),
@@ -435,6 +422,7 @@ Future<void> _openGoogleMaps(double lat, double long) async {
     );
   }
 
+  // ================= EMPTY =================
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -460,245 +448,240 @@ Future<void> _openGoogleMaps(double lat, double long) async {
     );
   }
 
+  // ================= DETAIL =================
   void _showProyekDetail(Proyek proyek) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => Container(
-            height: MediaQuery.of(context).size.height * 0.7,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+        ),
+        child: Column(
+          children: [
+            // Handle Bar
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            child: Column(
-              children: [
-                // Handle Bar
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                // Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+
+            // Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
                       children: [
-                        // Header
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2196F3).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.business,
-                                color: Color(0xFF2196F3),
-                                size: 28,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            const Expanded(
-                              child: Text(
-                                'Detail Proyek',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1F2937),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Nama Proyek
-                        _buildDetailRow(
-                          icon: Icons.apartment,
-                          label: 'Nama Proyek',
-                          value: proyek.namaProyek,
-                          color: const Color(0xFF2196F3),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Lokasi
-                        _buildDetailRow(
-                          icon: Icons.location_on,
-                          label: 'Lokasi',
-                          value: proyek.lokasiProyek,
-                          color: const Color(0xFFEF4444),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Deskripsi
-                        _buildDetailSection(
-                          icon: Icons.description,
-                          label: 'Deskripsi',
-                          value: proyek.deskripsi,
-                          color: const Color(0xFFF59E0B),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Koordinat
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3F4F6),
+                            color: const Color(0xFF2196F3).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.gps_fixed,
-                                    color: Color(0xFF10B981),
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Koordinat GPS',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1F2937),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Latitude',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          proyek.latProyek.toStringAsFixed(6),
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1F2937),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Longitude',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          proyek.logProyek.toStringAsFixed(6),
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1F2937),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          child: const Icon(
+                            Icons.business,
+                            color: Color(0xFF2196F3),
+                            size: 28,
                           ),
                         ),
-                        const SizedBox(height: 24),
-
-                        // Action Buttons
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              _openMaps(proyek);
-                            },
-                            icon: const Icon(Icons.map),
-                            label: const Text('Buka di Maps'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Detail Proyek',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Container(
-                          height: MediaQuery.of(context).size.height * 0.05,
-                          width: MediaQuery.of(context).size.width,
-                     
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              CardMenu(
-                                title: 'Absen Keluar',
-                                icon: Icons.logout,
-                                color: Colors.red,
-                                onTap:
-                                    () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const AbsenKeluarPage(),
-                                      ),
-                                    ),
-                              ),
-                              const SizedBox(width: 16),
-                              CardMenu(
-                                title: 'Absen Masuk',
-                                icon: Icons.login,
-                                color: Colors.green,
-                                onTap:
-                                    () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const AbsenMasukPage(),
-                                      ),
-                                    ),
-                              ),
-                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 24),
+
+                    // Nama Proyek
+                    _buildDetailRow(
+                      icon: Icons.apartment,
+                      label: 'Nama Proyek',
+                      value: proyek.namaProyek,
+                      color: const Color(0xFF2196F3),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Lokasi
+                    _buildDetailRow(
+                      icon: Icons.location_on,
+                      label: 'Lokasi',
+                      value: proyek.lokasiProyek,
+                      color: const Color(0xFFEF4444),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Deskripsi
+                    _buildDetailSection(
+                      icon: Icons.description,
+                      label: 'Deskripsi',
+                      value: proyek.deskripsi,
+                      color: const Color(0xFFF59E0B),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Koordinat
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.gps_fixed,
+                                color: Color(0xFF10B981),
+                                size: 20,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Koordinat GPS',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1F2937),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Latitude',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      proyek.latProyek.toStringAsFixed(6),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1F2937),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Longitude',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      proyek.longProyek.toStringAsFixed(6),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1F2937),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Action Buttons
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          _openGoogleMaps(
+                            proyek.latProyek,
+                            proyek.longProyek,
+                          );
+                        },
+                        icon: const Icon(Icons.map),
+                        label: const Text('Buka di Maps'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Absen Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CardMenu(
+                          title: 'Absen Keluar',
+                          icon: Icons.logout,
+                          color: Colors.red,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AbsenKeluarPage(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        CardMenu(
+                          title: 'Absen Masuk',
+                          icon: Icons.login,
+                          color: Colors.green,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AbsenMasukPage(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -788,16 +771,6 @@ Future<void> _openGoogleMaps(double lat, double long) async {
           ),
         ),
       ],
-    );
-  }
-
-  void _openMaps(Proyek proyek) {
-    // TODO: Implementasi buka Google Maps
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Membuka maps: ${proyek.namaProyek}'),
-        backgroundColor: const Color(0xFF10B981),
-      ),
     );
   }
 

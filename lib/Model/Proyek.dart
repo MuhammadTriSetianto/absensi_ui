@@ -2,8 +2,8 @@ class Proyek {
   final int idProyek;
   final String namaProyek;
   final String lokasiProyek;
-  final String latProyek;
-  final String longProyek;
+  final double latProyek;
+  final double longProyek;
   final String deskripsi;
 
   Proyek({
@@ -20,9 +20,9 @@ class Proyek {
       idProyek: json['id_proyek'],
       namaProyek: json['nama_proyek'],
       lokasiProyek: json['lokasi_proyek'],
-      latProyek: json['lat_proyek'],
-      longProyek: json['long_proyek'],
       deskripsi: json['deskripsi'],
+      latProyek: double.parse(json['lat_proyek'].toString()),
+      longProyek: double.parse(json['long_proyek'].toString()),
     );
   }
 }

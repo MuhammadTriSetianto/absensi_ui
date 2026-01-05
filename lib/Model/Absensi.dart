@@ -1,5 +1,6 @@
+import 'package:absensi_proyek/Model/Proyek.dart';
 import 'package:absensi_proyek/screens/proyek_display/list_proyek.dart';
-import 'package:absensi_proyek/service/Pegawai.dart';
+import 'package:absensi_proyek/Model/Pegawai.dart';
 
 class Absensi {
   final int idAbsensi;

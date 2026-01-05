@@ -21,7 +21,7 @@ class CardMenu extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.41,
-        height: MediaQuery.of(context).size.height * 0.12,
+        height: MediaQuery.of(context).size.height * 0.05,
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(16),
