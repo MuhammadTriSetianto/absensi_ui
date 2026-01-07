@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:absensi_proyek/screens/home_main.dart';
 import 'package:absensi_proyek/screens/userprofileview.dart';
-import 'package:absensi_proyek/screens/aktiviti.dart';
+import 'package:absensi_proyek/screens/notifikasi.dart';
 import 'package:absensi_proyek/screens/from/form_izin.dart';
 import 'package:absensi_proyek/screens/from/from_cuti_screen.dart';
 
@@ -121,7 +121,7 @@ class FormMenuScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Formulir'),
         centerTitle: true,
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: const Color(0xFF003554),
         foregroundColor: Colors.white,
       ),
       body: Padding(

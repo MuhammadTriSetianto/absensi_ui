@@ -26,7 +26,6 @@ class _UserProfileViewState extends State<UserProfileView> {
   late String getToken;
 
   @override
-
   void initState() {
     super.initState();
     getuser = getUser();
@@ -214,38 +213,16 @@ class _UserProfileViewState extends State<UserProfileView> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              const EditProfile(token:"1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec"),
+                                          builder:
+                                              (context) => const EditProfile(
+                                                token:
+                                                    "1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec",
+                                              ),
                                         ),
                                       );
                                     },
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildActionCard(
-                                    icon: Icons.description_rounded,
-                                    label: 'Rekap Absen',
-                                    color: const Color(0xFF00C897),
-                                    onTap: () {},
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildActionCard(
-                                    icon: Icons.settings_rounded,
-                                    label: 'Pengaturan',
-                                    color: const Color(0xFFFF9800),
-                                    onTap: () {},
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildActionCard(
                                     icon: Icons.help_rounded,
