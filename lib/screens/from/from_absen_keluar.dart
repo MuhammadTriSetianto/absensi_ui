@@ -53,8 +53,7 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
   // ================= GET USER PROYEK =================
   Future<List<UserProyek>> getUser() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? 
-        '1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec';
+    final token = prefs.getString('token');
 
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/usersproyek/user'),

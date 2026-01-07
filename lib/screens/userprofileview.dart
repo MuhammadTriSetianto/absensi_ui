@@ -4,6 +4,7 @@ import 'package:absensi_proyek/screens/from/from_edit_profile.dart';
 import 'package:absensi_proyek/Model/Absensi.dart';
 import 'package:absensi_proyek/Model/RekapAbsensi.dart';
 import 'package:absensi_proyek/Model/User.dart';
+import 'package:absensi_proyek/screens/log_in_screen.dart';
 import 'package:absensi_proyek/wigeds/buildheader.dart';
 import 'package:absensi_proyek/wigeds/buildinfocard.dart';
 import 'package:absensi_proyek/wigeds/buildprofilecard.dart';
@@ -23,49 +24,61 @@ class UserProfileView extends StatefulWidget {
 class _UserProfileViewState extends State<UserProfileView> {
   late Future<RekapAbsensiResponse> rekapFuture;
   late Future<GetUser> getuser;
-  late String getToken;
-
+  String keyToken = '';
   @override
   void initState() {
     super.initState();
     getuser = getUser();
     rekapFuture = getRekapAbsensi();
+    getToken();
   }
 
-  // Future <void> getToken() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   getToken = prefs.getString('token') ?? '';
-  // }
+  Future<void> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    setState(() {
+      keyToken = token.toString();
+    });
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keyToken = prefs.remove('token');
+    final rresponse = await http.get(
+      Uri.parse('http://10.0.2.2:8000/api/logout'),
+      headers: {
+        'Authorization': 'Bearer $keyToken',
+        'Accept': 'application/json',
+      },
+    );
+
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   Future<GetUser> getUser() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/profile'),
-      headers: {
-        'Authorization':
-            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
-        'Accept': 'application/json',
-      },
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return GetUser.fromJson(data['data']);
     } else {
-      throw Exception('Gagal mengambil data user');
+      final error =
+          jsonDecode(response.body)['massage'] ?? 'Gagal mengambil data user';
+      throw Exception(error);
     }
   }
 
   Future<RekapAbsensiResponse> getRekapAbsensi() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/absen/user/semua'),
-      headers: {
-        'Authorization':
-            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
-        'Accept': 'application/json',
-      },
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -214,9 +227,8 @@ class _UserProfileViewState extends State<UserProfileView> {
                                         context,
                                         MaterialPageRoute(
                                           builder:
-                                              (context) => const EditProfile(
-                                                token:
-                                                    "1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec",
+                                              (context) => EditProfile(
+                                                token: "Bearer $keyToken",
                                               ),
                                         ),
                                       );
@@ -309,7 +321,14 @@ class _UserProfileViewState extends State<UserProfileView> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          _logout();
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false,
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,

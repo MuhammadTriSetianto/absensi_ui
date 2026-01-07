@@ -1,3 +1,4 @@
+import 'package:absensi_proyek/screens/landing_page_screen.dart';
 import 'package:absensi_proyek/screens/proyek_display/list_proyek.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -6,7 +7,8 @@ import 'package:absensi_proyek/screens/userprofileview.dart';
 import 'package:absensi_proyek/screens/notifikasi.dart';
 import 'package:absensi_proyek/screens/from/form_izin.dart';
 import 'package:absensi_proyek/screens/from/from_cuti_screen.dart';
-
+import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,14 +22,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Absensi Proyek',
       debugShowCheckedModeBanner: false,
+      title: 'Absensi Proyek',
       theme: ThemeData(
         useMaterial3: true,
         primarySwatch: Colors.blue,
-        fontFamily: 'Roboto',
       ),
-      home: const MainNavigation(),
+      home: const LandingPagesScreen(),
     );
   }
 }

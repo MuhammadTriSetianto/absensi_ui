@@ -38,39 +38,36 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
     super.initState();
     _startClock();
     getuser = getUser();
-    
+
     // Setup animations
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    
+
     _slideController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
+
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
-    
+    ).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+    );
+
     _slideController.forward();
   }
 
   // ================= GET USER PROYEK =================
   Future<List<UserProyek>> getUser() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ??
-        '1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec';
-
+    final token = prefs.getString('token');
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/usersproyek/user'),
       headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
@@ -116,8 +113,10 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _showSnackBar('Izin lokasi ditolak permanen. Aktifkan di pengaturan.',
-            isError: true);
+        _showSnackBar(
+          'Izin lokasi ditolak permanen. Aktifkan di pengaturan.',
+          isError: true,
+        );
         return;
       }
 
@@ -140,77 +139,84 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder:
+          (context) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Pilih Sumber Foto',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
+            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: _buildImageSourceCard(
-                    icon: Icons.camera_alt,
-                    label: 'Kamera',
-                    color: const Color(0xFF6366F1),
-                    onTap: () async {
-                      Navigator.pop(context);
-                      final image = await picker.pickImage(
-                        source: ImageSource.camera,
-                        imageQuality: 80,
-                      );
-                      if (image != null) {
-                        setState(() => _imageFile = File(image.path));
-                        _showSnackBar('Foto berhasil diambil!', isError: false);
-                      }
-                    },
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: _buildImageSourceCard(
-                    icon: Icons.photo_library,
-                    label: 'Galeri',
-                    color: const Color(0xFF10B981),
-                    onTap: () async {
-                      Navigator.pop(context);
-                      final image = await picker.pickImage(
-                        source: ImageSource.gallery,
-                        imageQuality: 80,
-                      );
-                      if (image != null) {
-                        setState(() => _imageFile = File(image.path));
-                        _showSnackBar('Foto berhasil dipilih!', isError: false);
-                      }
-                    },
+                const SizedBox(height: 20),
+                const Text(
+                  'Pilih Sumber Foto',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
                   ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildImageSourceCard(
+                        icon: Icons.camera_alt,
+                        label: 'Kamera',
+                        color: const Color(0xFF6366F1),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final image = await picker.pickImage(
+                            source: ImageSource.camera,
+                            imageQuality: 80,
+                          );
+                          if (image != null) {
+                            setState(() => _imageFile = File(image.path));
+                            _showSnackBar(
+                              'Foto berhasil diambil!',
+                              isError: false,
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: _buildImageSourceCard(
+                        icon: Icons.photo_library,
+                        label: 'Galeri',
+                        color: const Color(0xFF10B981),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final image = await picker.pickImage(
+                            source: ImageSource.gallery,
+                            imageQuality: 80,
+                          );
+                          if (image != null) {
+                            setState(() => _imageFile = File(image.path));
+                            _showSnackBar(
+                              'Foto berhasil dipilih!',
+                              isError: false,
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -264,8 +270,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ??
-          '1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec';
+      final token = prefs.getString('token');
 
       final uri = Uri.parse('http://10.0.2.2:8000/api/absen/user/masuk');
 
@@ -273,16 +278,13 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
 
       request.headers.addAll({
         'Authorization':
-            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
+            'Bearer $token',
         'Accept': 'application/json',
       });
       request.fields['latitude'] = _currentPosition!.latitude.toString();
       request.fields['longitude'] = _currentPosition!.longitude.toString();
       request.files.add(
-        await http.MultipartFile.fromPath(
-          'foto',
-          _imageFile!.path,
-        ),
+        await http.MultipartFile.fromPath('foto', _imageFile!.path),
       );
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -299,8 +301,10 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
         }
       } else {
         final body = jsonDecode(response.body);
-        _showSnackBar('Absensi gagal! ${body['message'].toLowerCase()}',
-            isError: true);
+        _showSnackBar(
+          'Absensi gagal! ${body['message'].toLowerCase()}',
+          isError: true,
+        );
       }
     } catch (e) {
       _showSnackBar('Terjadi kesalahan: $e', isError: true);
@@ -341,10 +345,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
             const SizedBox(height: 10),
             Text(
               'Absensi masuk telah tercatat',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 20),
             Container(
@@ -355,11 +356,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
               ),
               child: Column(
                 children: [
-                  _buildInfoRow(
-                    Icons.access_time,
-                    'Waktu',
-                    _currentTime,
-                  ),
+                  _buildInfoRow(Icons.access_time, 'Waktu', _currentTime),
                   const Divider(height: 20),
                   _buildInfoRow(
                     Icons.location_on,
@@ -397,10 +394,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
                 ),
                 child: const Text(
                   'Selesai',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -417,10 +411,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
         const SizedBox(width: 10),
         Text(
           '$label:',
-          style: const TextStyle(
-            fontSize: 13,
-            color: Color(0xFF6B7280),
-          ),
+          style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
         ),
         const Spacer(),
         Text(
@@ -449,7 +440,8 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
             Expanded(child: Text(msg)),
           ],
         ),
-        backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+        backgroundColor:
+            isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(15),
@@ -462,13 +454,14 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final hour = now.hour;
-    String greeting = hour < 12
-        ? 'Selamat Pagi'
-        : hour < 15
+    String greeting =
+        hour < 12
+            ? 'Selamat Pagi'
+            : hour < 15
             ? 'Selamat Siang'
             : hour < 18
-                ? 'Selamat Sore'
-                : 'Selamat Malam';
+            ? 'Selamat Sore'
+            : 'Selamat Malam';
 
     return Scaffold(
       body: Container(
@@ -476,11 +469,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFEEF2FF),
-              Color(0xFFE0E7FF),
-              Color(0xFFDDD6FE),
-            ],
+            colors: [Color(0xFFEEF2FF), Color(0xFFE0E7FF), Color(0xFFDDD6FE)],
           ),
         ),
         child: SafeArea(
@@ -525,12 +514,17 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                  colors: [
+                                    Color(0xFF6366F1),
+                                    Color(0xFF8B5CF6),
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(18),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                                    color: const Color(
+                                      0xFF6366F1,
+                                    ).withOpacity(0.3),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -590,8 +584,10 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            DateFormat('EEEE, d MMMM yyyy', 'id_ID')
-                                .format(DateTime.now()),
+                            DateFormat(
+                              'EEEE, d MMMM yyyy',
+                              'id_ID',
+                            ).format(DateTime.now()),
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.white70,
@@ -813,10 +809,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
               const SizedBox(height: 4),
               Text(
@@ -870,7 +863,9 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
         onPressed: _isLoadingLocation ? null : _getCurrentLocation,
         style: ElevatedButton.styleFrom(
           backgroundColor:
-              _currentPosition != null ? const Color(0xFF10B981) : const Color(0xFF6366F1),
+              _currentPosition != null
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF6366F1),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -882,36 +877,37 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
                   : const Color(0xFF6366F1))
               .withOpacity(0.4),
         ),
-        child: _isLoadingLocation
-            ? const SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _currentPosition == null
-                        ? Icons.my_location
-                        : Icons.check_circle,
-                    size: 22,
+        child:
+            _isLoadingLocation
+                ? const SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2.5,
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    _currentPosition == null
-                        ? 'Ambil Lokasi'
-                        : 'Lokasi Terdeteksi',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _currentPosition == null
+                          ? Icons.my_location
+                          : Icons.check_circle,
+                      size: 22,
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 10),
+                    Text(
+                      _currentPosition == null
+                          ? 'Ambil Lokasi'
+                          : 'Lokasi Terdeteksi',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
       ),
     );
   }
@@ -937,11 +933,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.location_on,
-                color: Color(0xFF10B981),
-                size: 20,
-              ),
+              const Icon(Icons.location_on, color: Color(0xFF10B981), size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -958,11 +950,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(
-                Icons.location_on,
-                color: Color(0xFF10B981),
-                size: 20,
-              ),
+              const Icon(Icons.location_on, color: Color(0xFF10B981), size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -989,16 +977,19 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
         onPressed: _pickImage,
         style: ElevatedButton.styleFrom(
           backgroundColor:
-              _imageFile != null ? const Color(0xFF10B981) : const Color(0xFF0EA5E9),
+              _imageFile != null
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF0EA5E9),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
           elevation: _imageFile != null ? 2 : 5,
-          shadowColor:
-              (_imageFile != null ? const Color(0xFF10B981) : const Color(0xFF0EA5E9))
-                  .withOpacity(0.4),
+          shadowColor: (_imageFile != null
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF0EA5E9))
+              .withOpacity(0.4),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1010,10 +1001,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
             const SizedBox(width: 10),
             Text(
               _imageFile == null ? 'Ambil Foto Selfie' : 'Foto Tersimpan',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -1046,11 +1034,7 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
                   color: Colors.black.withOpacity(0.6),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.close,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 20),
               ),
             ),
           ),
@@ -1078,30 +1062,31 @@ class _AbsenMasukPageState extends State<AbsenMasukPage>
           shadowColor: const Color(0xFF10B981).withOpacity(0.4),
           disabledBackgroundColor: Colors.grey[300],
         ),
-        child: _isSubmitting
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 3,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.check_circle, size: 24),
-                  const SizedBox(width: 12),
-                  Text(
-                    isComplete ? 'Absen Masuk Sekarang' : 'Lengkapi Data',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
+        child:
+            _isSubmitting
+                ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 3,
                   ),
-                ],
-              ),
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.check_circle, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      isComplete ? 'Absen Masuk Sekarang' : 'Lengkapi Data',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
       ),
     );
   }

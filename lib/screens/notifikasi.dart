@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Model/notifikasi.dart';
 
@@ -17,7 +18,7 @@ class _AktivitiState extends State<Aktiviti>
   late TabController _tabController;
   late Future<List<Notifikasi>> notifications;
 
-  final String token = '1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec';
+ 
 
   @override
   void initState() {
@@ -29,6 +30,8 @@ class _AktivitiState extends State<Aktiviti>
   // ================= API =================
 
   Future<List<Notifikasi>> _fetchNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
     final url = Uri.parse('http://10.0.2.2:8000/api/notifikasi/user');
 
     final response = await http.get(
@@ -45,6 +48,9 @@ class _AktivitiState extends State<Aktiviti>
   }
 
   Future<void> _markAsRead(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final url = Uri.parse('http://10.0.2.2:8000/api/notifikasi/$id/read');
 
     await http.put(
@@ -54,6 +60,8 @@ class _AktivitiState extends State<Aktiviti>
   }
 
   Future<void> _deleteNotification(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
     final url = Uri.parse('http://10.0.2.2:8000/api/notifikasi/$id/delete');
 
     await http.delete(
@@ -143,10 +151,7 @@ class _AktivitiState extends State<Aktiviti>
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      const Color(0xFF0A3D5C),
-                      const Color(0xFF1565C0),
-                    ],
+                    colors: [const Color(0xFF0A3D5C), const Color(0xFF1565C0)],
                   ),
                 ),
                 child: SafeArea(
@@ -206,13 +211,18 @@ class _AktivitiState extends State<Aktiviti>
                 future: notifications,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    final unreadCount = snapshot.data!
-                        .where((n) => n.status == 'belum_dibaca')
-                        .length;
+                    final unreadCount =
+                        snapshot.data!
+                            .where((n) => n.status == 'belum_dibaca')
+                            .length;
                     if (unreadCount > 0) {
                       return TextButton.icon(
                         onPressed: _markAllAsRead,
-                        icon: const Icon(Icons.done_all, color: Colors.white, size: 18),
+                        icon: const Icon(
+                          Icons.done_all,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                         label: const Text(
                           'Tandai Semua',
                           style: TextStyle(color: Colors.white, fontSize: 12),
@@ -235,13 +245,15 @@ class _AktivitiState extends State<Aktiviti>
                 if (!snapshot.hasData) return const SizedBox.shrink();
 
                 final total = snapshot.data!.length;
-                final unread = snapshot.data!
-                    .where((n) => n.status == 'belum_dibaca')
-                    .length;
-                final today = snapshot.data!.where((n) {
-                  final diff = DateTime.now().difference(n.tanggal);
-                  return diff.inHours < 24;
-                }).length;
+                final unread =
+                    snapshot.data!
+                        .where((n) => n.status == 'belum_dibaca')
+                        .length;
+                final today =
+                    snapshot.data!.where((n) {
+                      final diff = DateTime.now().difference(n.tanggal);
+                      return diff.inHours < 24;
+                    }).length;
 
                 return Padding(
                   padding: const EdgeInsets.all(16),
@@ -281,9 +293,7 @@ class _AktivitiState extends State<Aktiviti>
           ),
 
           // Notification List
-          SliverToBoxAdapter(
-            child: _buildNotificationTab(),
-          ),
+          SliverToBoxAdapter(child: _buildNotificationTab()),
         ],
       ),
     );
@@ -360,10 +370,7 @@ class _AktivitiState extends State<Aktiviti>
                 const SizedBox(height: 16),
                 Text(
                   'Memuat notifikasi...',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                 ),
               ],
             ),
@@ -426,54 +433,59 @@ class _AktivitiState extends State<Aktiviti>
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(10),
+          builder:
+              (context) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.delete_outline,
+                        color: Colors.red.shade400,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text('Hapus Notifikasi'),
+                  ],
+                ),
+                content: const Text('Yakin ingin menghapus notifikasi ini?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text(
+                      'Batal',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
                   ),
-                  child: Icon(Icons.delete_outline, color: Colors.red.shade400),
-                ),
-                const SizedBox(width: 12),
-                const Text('Hapus Notifikasi'),
-              ],
-            ),
-            content: const Text('Yakin ingin menghapus notifikasi ini?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(
-                  'Batal',
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade400,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade400,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Hapus'),
                   ),
-                ),
-                child: const Text('Hapus'),
+                ],
               ),
-            ],
-          ),
         );
       },
       onDismissed: (direction) async {
         await _deleteNotification(notification.idNotifikasi);
         setState(() {
           notifications = notifications.then(
-            (list) => list
-                .where((n) => n.idNotifikasi != notification.idNotifikasi)
-                .toList(),
+            (list) =>
+                list
+                    .where((n) => n.idNotifikasi != notification.idNotifikasi)
+                    .toList(),
           );
         });
 
@@ -532,16 +544,18 @@ class _AktivitiState extends State<Aktiviti>
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isUnread
-                  ? const Color(0xFF0A3D5C).withOpacity(0.3)
-                  : Colors.transparent,
+              color:
+                  isUnread
+                      ? const Color(0xFF0A3D5C).withOpacity(0.3)
+                      : Colors.transparent,
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: isUnread
-                    ? const Color(0xFF0A3D5C).withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05),
+                color:
+                    isUnread
+                        ? const Color(0xFF0A3D5C).withOpacity(0.1)
+                        : Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -601,9 +615,10 @@ class _AktivitiState extends State<Aktiviti>
                                     child: Text(
                                       notification.judul,
                                       style: TextStyle(
-                                        fontWeight: isUnread
-                                            ? FontWeight.bold
-                                            : FontWeight.w600,
+                                        fontWeight:
+                                            isUnread
+                                                ? FontWeight.bold
+                                                : FontWeight.w600,
                                         fontSize: 16,
                                         color: Colors.grey.shade900,
                                       ),
@@ -714,11 +729,7 @@ class _AktivitiState extends State<Aktiviti>
               color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
+            child: Icon(icon, size: 64, color: Colors.grey.shade400),
           ),
           const SizedBox(height: 20),
           Text(
@@ -732,10 +743,7 @@ class _AktivitiState extends State<Aktiviti>
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
         ],
       ),

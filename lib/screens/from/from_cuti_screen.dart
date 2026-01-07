@@ -40,7 +40,7 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
       Uri.parse('http://10.0.2.2:8000/api/usersproyek'),
       headers: {
         'Authorization':
-            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
+            'Bearer $token',
         'Accept': 'application/json',
       },
     );
@@ -138,7 +138,7 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
 
     request.headers.addAll({
       'Authorization':
-          'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
+          'Bearer $token',
       'Accept': 'application/json',
     });
 

@@ -7,6 +7,7 @@ import 'package:absensi_proyek/wigeds/error.dart';
 import 'package:absensi_proyek/wigeds/menucard.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ListProyekScreen extends StatefulWidget {
@@ -30,13 +31,14 @@ class _ListProyekScreenState extends State<ListProyekScreen> {
     futureProyek = fetchProyek();
   }
 
-  // ================= FETCH API =================
   Future<List<Proyek>> fetchProyek() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/usersproyek/user'),
       headers: {
         'Authorization':
-            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
+            'Bearer $token',
         'Accept': 'application/json',
       },
     );
@@ -58,7 +60,6 @@ class _ListProyekScreenState extends State<ListProyekScreen> {
     }
   }
 
-  // ================= SEARCH =================
   void _filterProyek(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -76,20 +77,19 @@ class _ListProyekScreenState extends State<ListProyekScreen> {
     });
   }
 
-  // ================= MAPS =================
-  Future<void> _openGoogleMaps(double lat, double long) async {
-    final url = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$lat,$long',
-    );
+Future<void> _openGoogleMaps(double lat, double lng) async {
+  final Uri url = Uri.parse(
+    'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+  );
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      ErrorSnackbar.show(context, 'Tidak bisa membuka Google Maps');
-    }
+  if (!await launchUrl(
+    url,
+    mode: LaunchMode.externalApplication,
+  )) {
+    ErrorSnackbar.show(context, 'Tidak bisa membuka Google Maps');
   }
+}
 
-  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -55,12 +55,10 @@ class _HomeMainState extends State<HomeMain> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-    final tokentes =
-        'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec';
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/profile'),
       headers: {
-        'Authorization': 'Bearer $tokentes',
+        'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       },
     );
@@ -75,11 +73,13 @@ class _HomeMainState extends State<HomeMain> {
 
   // Absensi
   Future<RekapAbsensiResponse> getRekapAbsensi() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/absen/user/semua'),
       headers: {
         'Authorization':
-            'Bearer 1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec',
+            'Bearer $token',
         'Accept': 'application/json',
       },
     );
