@@ -17,7 +17,8 @@ class AbsenKeluarPage extends StatefulWidget {
   State<AbsenKeluarPage> createState() => _AbsenKeluarPageState();
 }
 
-class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProviderStateMixin {
+class _AbsenKeluarPageState extends State<AbsenKeluarPage>
+    with SingleTickerProviderStateMixin {
   Position? _currentPosition;
   File? _imageFile;
 
@@ -36,17 +37,17 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
     super.initState();
     _startClock();
     getuser = getUser();
-    
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
+
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
     );
-    
+
     _animationController.forward();
   }
 
@@ -57,10 +58,7 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
 
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/usersproyek/user'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -72,7 +70,6 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
     }
   }
 
-  // ================= JAM =================
   void _startClock() {
     _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -83,7 +80,6 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
     });
   }
 
-  // ================= LOKASI =================
   Future<void> _getCurrentLocation() async {
     setState(() => _isLoadingLocation = true);
 
@@ -103,7 +99,10 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _showSnackBar('Izin lokasi ditolak permanen. Aktifkan di pengaturan.', isError: true);
+        _showSnackBar(
+          'Izin lokasi ditolak permanen. Aktifkan di pengaturan.',
+          isError: true,
+        );
         return;
       }
 
@@ -126,96 +125,103 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder:
+          (context) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Pilih Sumber Foto',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
-                  borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                child: const Icon(Icons.camera_alt, color: Color(0xFF16A34A)),
-              ),
-              title: const Text(
-                'Ambil dari Kamera',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              subtitle: const Text(
-                'Foto langsung dengan kamera',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-                final image = await picker.pickImage(
-                  source: ImageSource.camera,
-                  imageQuality: 80,
-                );
-                if (image != null) {
-                  setState(() => _imageFile = File(image.path));
-                  _showSnackBar('Foto berhasil diambil!', isSuccess: true);
-                }
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDEF7EC),
-                  borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 20),
+                const Text(
+                  'Pilih Sumber Foto',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
                 ),
-                child: const Icon(Icons.photo_library, color: Color(0xFF047857)),
-              ),
-              title: const Text(
-                'Pilih dari Galeri',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              subtitle: const Text(
-                'Pilih foto yang sudah ada',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-                final image = await picker.pickImage(
-                  source: ImageSource.gallery,
-                  imageQuality: 80,
-                );
-                if (image != null) {
-                  setState(() => _imageFile = File(image.path));
-                  _showSnackBar('Foto berhasil dipilih!', isSuccess: true);
-                }
-              },
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCFCE7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Color(0xFF16A34A),
+                    ),
+                  ),
+                  title: const Text(
+                    'Ambil dari Kamera',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Foto langsung dengan kamera',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final image = await picker.pickImage(
+                      source: ImageSource.camera,
+                      imageQuality: 80,
+                    );
+                    if (image != null) {
+                      setState(() => _imageFile = File(image.path));
+                      _showSnackBar('Foto berhasil diambil!', isSuccess: true);
+                    }
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDEF7EC),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.photo_library,
+                      color: Color(0xFF047857),
+                    ),
+                  ),
+                  title: const Text(
+                    'Pilih dari Galeri',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Pilih foto yang sudah ada',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final image = await picker.pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 80,
+                    );
+                    if (image != null) {
+                      setState(() => _imageFile = File(image.path));
+                      _showSnackBar('Foto berhasil dipilih!', isSuccess: true);
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
             ),
-            const SizedBox(height: 10),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -235,17 +241,16 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? 
-          '1|FZGajyXfVyVuxVYYV9RBZQObsj4gU6AJ2bTWecpbb9505dec';
+      final token = prefs.getString('token');
 
       final uri = Uri.parse('http://10.0.2.2:8000/api/absen/user/pulang');
       final request = http.MultipartRequest('POST', uri);
-      
+
       request.headers.addAll({
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       });
-      
+
       request.fields['_method'] = 'PUT';
       request.fields['latitude'] = _currentPosition!.latitude.toString();
       request.fields['longitude'] = _currentPosition!.longitude.toString();
@@ -262,103 +267,107 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
         _showSnackBar('Absensi keluar berhasil!', isSuccess: true);
 
         if (!mounted) return;
-        
+
         // Show success dialog with animation
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (_) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDCFCE7),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check_circle,
-                      color: Color(0xFF16A34A),
-                      size: 48,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Absen Keluar Berhasil!',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildInfoRow(
-                          Icons.access_time,
-                          'Waktu',
-                          _currentTime,
+          builder:
+              (_) => Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDCFCE7),
+                          shape: BoxShape.circle,
                         ),
-                        const Divider(height: 16),
-                        _buildInfoRow(
-                          Icons.calendar_today,
-                          'Tanggal',
-                          DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.now()),
+                        child: const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFF16A34A),
+                          size: 48,
                         ),
-                        const Divider(height: 16),
-                        _buildInfoRow(
-                          Icons.location_on,
-                          'Lokasi',
-                          '${_currentPosition!.latitude.toStringAsFixed(6)}, ${_currentPosition!.longitude.toStringAsFixed(6)}',
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Absen Keluar Berhasil!',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        setState(() {
-                          _currentPosition = null;
-                          _imageFile = null;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Selesai',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        child: Column(
+                          children: [
+                            _buildInfoRow(
+                              Icons.access_time,
+                              'Waktu',
+                              _currentTime,
+                            ),
+                            const Divider(height: 16),
+                            _buildInfoRow(
+                              Icons.calendar_today,
+                              'Tanggal',
+                              DateFormat(
+                                'd MMMM yyyy',
+                                'id_ID',
+                              ).format(DateTime.now()),
+                            ),
+                            const Divider(height: 16),
+                            _buildInfoRow(
+                              Icons.location_on,
+                              'Lokasi',
+                              '${_currentPosition!.latitude.toStringAsFixed(6)}, ${_currentPosition!.longitude.toStringAsFixed(6)}',
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            setState(() {
+                              _currentPosition = null;
+                              _imageFile = null;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF16A34A),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Selesai',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
         );
       } else {
         _showSnackBar(body['message'] ?? 'Absensi keluar gagal', isError: true);
@@ -381,10 +390,7 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF6B7280),
-                ),
+                style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
               ),
               const SizedBox(height: 2),
               Text(
@@ -402,13 +408,19 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
     );
   }
 
-  void _showSnackBar(String msg, {bool isSuccess = false, bool isError = false}) {
+  void _showSnackBar(
+    String msg, {
+    bool isSuccess = false,
+    bool isError = false,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             Icon(
-              isSuccess ? Icons.check_circle : (isError ? Icons.error : Icons.info),
+              isSuccess
+                  ? Icons.check_circle
+                  : (isError ? Icons.error : Icons.info),
               color: Colors.white,
               size: 20,
             ),
@@ -421,9 +433,10 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
             ),
           ],
         ),
-        backgroundColor: isSuccess 
-            ? const Color(0xFF16A34A) 
-            : (isError ? const Color(0xFFDC2626) : const Color(0xFF2563EB)),
+        backgroundColor:
+            isSuccess
+                ? const Color(0xFF16A34A)
+                : (isError ? const Color(0xFFDC2626) : const Color(0xFF2563EB)),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -501,12 +514,17 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFFFECDD3), Color(0xFFFCA5A5)],
+                                  colors: [
+                                    Color(0xFFFECDD3),
+                                    Color(0xFFFCA5A5),
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(18),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFCA5A5).withOpacity(0.4),
+                                    color: const Color(
+                                      0xFFFCA5A5,
+                                    ).withOpacity(0.4),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -521,7 +539,7 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                           ],
                         ),
                         const SizedBox(height: 20),
-                        
+
                         // Time Display
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -560,8 +578,10 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                                       ),
                                     ),
                                     Text(
-                                      DateFormat('EEEE, d MMMM yyyy', 'id_ID')
-                                          .format(DateTime.now()),
+                                      DateFormat(
+                                        'EEEE, d MMMM yyyy',
+                                        'id_ID',
+                                      ).format(DateTime.now()),
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: Color(0xFF6B7280),
@@ -573,14 +593,15 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // User Info
                         FutureBuilder<List<UserProyek>>(
                           future: getuser,
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
                               return Container(
                                 padding: const EdgeInsets.all(16),
                                 child: const Center(
@@ -601,8 +622,11 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                                 ),
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.error_outline, 
-                                      color: Color(0xFFDC2626), size: 20),
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: Color(0xFFDC2626),
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
@@ -638,7 +662,9 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFDCFCE7),
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: const Icon(
                                           Icons.person_rounded,
@@ -649,7 +675,8 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             const Text(
                                               'Nama Pegawai',
@@ -679,7 +706,9 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFDEF7EC),
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: const Icon(
                                           Icons.business_rounded,
@@ -690,7 +719,8 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             const Text(
                                               'Proyek',
@@ -773,52 +803,58 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _isLoadingLocation ? null : _getCurrentLocation,
+                            onPressed:
+                                _isLoadingLocation ? null : _getCurrentLocation,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _currentPosition == null
-                                  ? const Color(0xFFDC2626)
-                                  : const Color(0xFF16A34A),
+                              backgroundColor:
+                                  _currentPosition == null
+                                      ? const Color(0xFFDC2626)
+                                      : const Color(0xFF16A34A),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               elevation: _currentPosition == null ? 4 : 0,
-                              shadowColor: const Color(0xFFDC2626).withOpacity(0.4),
+                              shadowColor: const Color(
+                                0xFFDC2626,
+                              ).withOpacity(0.4),
                             ),
-                            child: _isLoadingLocation
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2.5,
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        _currentPosition == null
-                                            ? Icons.my_location
-                                            : Icons.check_circle,
-                                        size: 20,
+                            child:
+                                _isLoadingLocation
+                                    ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        _currentPosition == null
-                                            ? 'Ambil Lokasi'
-                                            : 'Lokasi Terdeteksi',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
+                                    )
+                                    : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          _currentPosition == null
+                                              ? Icons.my_location
+                                              : Icons.check_circle,
+                                          size: 20,
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          _currentPosition == null
+                                              ? 'Ambil Lokasi'
+                                              : 'Lokasi Terdeteksi',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                           ),
                         ),
-                        
+
                         if (_currentPosition != null) ...[
                           const SizedBox(height: 12),
                           Container(
@@ -919,27 +955,32 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                               size: 20,
                             ),
                             label: Text(
-                              _imageFile == null ? 'Ambil Foto' : 'Foto Tersimpan',
+                              _imageFile == null
+                                  ? 'Ambil Foto'
+                                  : 'Foto Tersimpan',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _imageFile == null
-                                  ? const Color(0xFFEA580C)
-                                  : const Color(0xFF16A34A),
+                              backgroundColor:
+                                  _imageFile == null
+                                      ? const Color(0xFFEA580C)
+                                      : const Color(0xFF16A34A),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               elevation: _imageFile == null ? 4 : 0,
-                              shadowColor: const Color(0xFFEA580C).withOpacity(0.4),
+                              shadowColor: const Color(
+                                0xFFEA580C,
+                              ).withOpacity(0.4),
                             ),
                           ),
                         ),
-                        
+
                         if (_imageFile != null) ...[
                           const SizedBox(height: 12),
                           ClipRRect(
@@ -994,40 +1035,44 @@ class _AbsenKeluarPageState extends State<AbsenKeluarPage> with SingleTickerProv
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               elevation: 6,
-                              shadowColor: const Color(0xFFDC2626).withOpacity(0.5),
+                              shadowColor: const Color(
+                                0xFFDC2626,
+                              ).withOpacity(0.5),
                             ),
-                            child: _isSubmitting
-                                ? const SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2.5,
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                        Icons.logout_rounded,
-                                        size: 22,
+                            child:
+                                _isSubmitting
+                                    ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
                                       ),
-                                      const SizedBox(width: 10),
-                                      const Text(
-                                        'Absen Keluar Sekarang',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.3,
+                                    )
+                                    : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.logout_rounded,
+                                          size: 22,
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                        const SizedBox(width: 10),
+                                        const Text(
+                                          'Absen Keluar Sekarang',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.3,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                           ),
                         ),
 
                         const SizedBox(height: 16),
-                        
+
                         // Info text
                         Container(
                           padding: const EdgeInsets.all(12),

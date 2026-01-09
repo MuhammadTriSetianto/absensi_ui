@@ -120,10 +120,12 @@ class FormMenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Formulir'),
+        automaticallyImplyLeading: false,
+        title: const Text('Formulir',
+        style: TextStyle(color: Colors.white),),
         centerTitle: true,
         backgroundColor: const Color(0xFF003554),
-        foregroundColor: Colors.white,
+       
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

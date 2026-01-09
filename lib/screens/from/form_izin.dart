@@ -21,6 +21,7 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
   String? _jenisIzin;
   String? _idProyek;
   String? _idPegawai;
+  List _proyekList = [];
 
   DateTime? _tanggalMulai;
   DateTime? _tanggalSelesai;
@@ -45,8 +46,11 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
+      final data = body['data'];
+      List list = data.map((e) => e['proyek']).toList();
+      print('proyek: $list');
       setState(() {
-        _idProyek = body['data'][0]['id_proyek'].toString();
+        _proyekList = list;
         _idPegawai = body['data'][0]['id_pegawai'];
         _loading = false;
       });
@@ -141,6 +145,7 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
       _showMessage('Izin berhasil diajukan', Colors.green);
       _formKey.currentState!.reset();
       setState(() {
+        _idProyek = null;
         _jenisIzin = null;
         _pickedFile = null;
         _tanggalMulai = null;
@@ -347,6 +352,34 @@ class _FormIzinScreenState extends State<FormIzinScreen> {
                 ),
                 child: Column(
                   children: [
+                    DropdownButtonFormField<String>(
+                      value: _idProyek,
+                      decoration: _decor(
+                        'Nama Proyek',
+                        Icons.category_outlined,
+                        hint: 'Pilih nama proyek izin',
+                      ),
+                      dropdownColor: Colors.white,
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Color(0xFF003554),
+                      ),
+                      items:
+                          _proyekList
+                              .map(
+                                (proyek) => DropdownMenuItem<String>(
+                                  value: proyek['id_proyek'].toString(),
+                                  child: Text(proyek['nama_proyek']),
+                                ),
+                              )
+                              .toList(),
+                      onChanged: (v) => setState(() => _idProyek = v!),
+                      validator:
+                          (v) => v == null ? 'Proyek wajib dipilih' : null,
+                    ),
+
+                    const SizedBox(height: 16),
+
                     DropdownButtonFormField<String>(
                       value: _jenisIzin,
                       decoration: _decor(

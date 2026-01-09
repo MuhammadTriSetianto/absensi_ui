@@ -21,7 +21,7 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
   DateTime? _tanggalMulai;
   DateTime? _tanggalSelesai;
   PlatformFile? _pickedFile;
-
+  List _proyekList = [];
   String? _idProyek;
   bool _loading = true;
   bool _submitting = false;
@@ -38,17 +38,16 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
 
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/usersproyek'),
-      headers: {
-        'Authorization':
-            'Bearer $token',
-        'Accept': 'application/json',
-      },
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
+      final data = body['data'];
+      List list = data.map((e) => e['proyek']).toList();
+      print('proyek: $list');
       setState(() {
-        _idProyek = body['data'][0]['id_proyek'].toString();
+        _proyekList = list;
         _loading = false;
       });
     } else {
@@ -119,10 +118,13 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_tanggalMulai == null ||
-        _tanggalSelesai == null ||
-        _pickedFile == null) {
-      _showSnackBar('Semua field wajib diisi', Colors.orange);
+    if (_tanggalMulai == null || _tanggalSelesai == null) {
+      _showSnackBar('Periode cuti wajib dipilih', Colors.orange);
+      return;
+    }
+
+    if (_pickedFile == null) {
+      _showSnackBar('Dokumen pendukung wajib diunggah', Colors.orange);
       return;
     }
 
@@ -137,8 +139,7 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
     );
 
     request.headers.addAll({
-      'Authorization':
-          'Bearer $token',
+      'Authorization': 'Bearer $token',
       'Accept': 'application/json',
     });
 
@@ -166,6 +167,7 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
         _pickedFile = null;
         _tanggalMulai = null;
         _tanggalSelesai = null;
+        _idProyek = null;
         _subjekController.clear();
         _keteranganController.clear();
       });
@@ -221,6 +223,10 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.red, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
@@ -289,9 +295,9 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Card
+              // Header Card - Lebih compact
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF003554), Color(0xFF006494)],
@@ -310,7 +316,7 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
@@ -318,10 +324,10 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
                       child: const Icon(
                         Icons.beach_access,
                         color: Colors.white,
-                        size: 32,
+                        size: 28,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,16 +336,16 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
                             'Ajukan Cuti',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          SizedBox(height: 2),
                           Text(
                             'Isi formulir dengan lengkap',
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 14,
+                              fontSize: 13,
                             ),
                           ),
                         ],
@@ -352,71 +358,70 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
               const SizedBox(height: 24),
 
               // Form Section
-              const Text(
-                'Detail Cuti',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF003554),
-                ),
-              ),
+              _buildSectionTitle('Detail Cuti', Icons.edit_note),
               const SizedBox(height: 12),
 
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+              // Proyek Dropdown
+              DropdownButtonFormField<String>(
+                value: _idProyek,
+                decoration: _inputDecor(
+                  'Nama Proyek',
+                  Icons.business_center_outlined,
+                  hint: 'Pilih proyek',
                 ),
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _subjekController,
-                      decoration: _inputDecor(
-                        'Subjek Cuti',
-                        Icons.title_outlined,
-                        hint: 'Contoh: Cuti Tahunan',
-                      ),
-                      style: const TextStyle(fontSize: 15),
-                      validator:
-                          (v) => v!.isEmpty ? 'Subjek Cuti wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _keteranganController,
-                      maxLines: 4,
-                      decoration: _inputDecor(
-                        'Keterangan Cuti',
-                        Icons.notes_outlined,
-                        hint: 'Jelaskan keperluan cuti Anda',
-                      ),
-                      style: const TextStyle(fontSize: 15),
-                      validator:
-                          (v) =>
-                              v!.isEmpty ? 'Keterangan Cuti wajib diisi' : null,
-                    ),
-                  ],
+                dropdownColor: Colors.white,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Color(0xFF003554),
                 ),
+                items: _proyekList
+                    .map(
+                      (proyek) => DropdownMenuItem<String>(
+                        value: proyek['id_proyek'].toString(),
+                        child: Text(
+                          proyek['nama_proyek'],
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setState(() => _idProyek = v),
+                validator: (v) => v == null ? 'Proyek wajib dipilih' : null,
+              ),
+
+              const SizedBox(height: 16),
+
+              // Subjek Cuti
+              TextFormField(
+                controller: _subjekController,
+                decoration: _inputDecor(
+                  'Subjek Cuti',
+                  Icons.title_outlined,
+                  hint: 'Contoh: Cuti Tahunan',
+                ),
+                style: const TextStyle(fontSize: 15),
+                validator: (v) => v!.isEmpty ? 'Subjek cuti wajib diisi' : null,
+              ),
+
+              const SizedBox(height: 16),
+
+              // Keterangan
+              TextFormField(
+                controller: _keteranganController,
+                maxLines: 4,
+                decoration: _inputDecor(
+                  'Keterangan Cuti',
+                  Icons.notes_outlined,
+                  hint: 'Jelaskan keperluan cuti Anda',
+                ),
+                style: const TextStyle(fontSize: 15),
+                validator: (v) => v!.isEmpty ? 'Keterangan wajib diisi' : null,
               ),
 
               const SizedBox(height: 24),
 
               // Date Section
-              const Text(
-                'Periode Cuti',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF003554),
-                ),
-              ),
+              _buildSectionTitle('Periode Cuti', Icons.date_range),
               const SizedBox(height: 12),
 
               Container(
@@ -433,138 +438,22 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
                 ),
                 child: Column(
                   children: [
-                    InkWell(
+                    _buildDateSelector(
+                      label: 'Tanggal Mulai',
+                      icon: Icons.calendar_today,
+                      date: _tanggalMulai,
+                      hint: 'Pilih tanggal mulai',
                       onTap: () => _selectDate(true),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF003554).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.calendar_today,
-                                color: Color(0xFF003554),
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Tanggal Mulai',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _tanggalMulai == null
-                                        ? 'Pilih tanggal mulai cuti'
-                                        : DateFormat(
-                                          'EEEE, dd MMMM yyyy',
-                                          'id_ID',
-                                        ).format(_tanggalMulai!),
-                                    style: TextStyle(
-                                      color:
-                                          _tanggalMulai == null
-                                              ? Colors.grey
-                                              : const Color(0xFF003554),
-                                      fontSize: 15,
-                                      fontWeight:
-                                          _tanggalMulai == null
-                                              ? FontWeight.normal
-                                              : FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                          ],
-                        ),
-                      ),
+                      isFirst: true,
                     ),
-                    const Divider(height: 1),
-                    InkWell(
+                    const Divider(height: 1, color: Color(0xFFE0E8F0)),
+                    _buildDateSelector(
+                      label: 'Tanggal Selesai',
+                      icon: Icons.event,
+                      date: _tanggalSelesai,
+                      hint: 'Pilih tanggal selesai',
                       onTap: () => _selectDate(false),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(16),
-                        bottomRight: Radius.circular(16),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF003554).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.event,
-                                color: Color(0xFF003554),
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Tanggal Selesai',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _tanggalSelesai == null
-                                        ? 'Pilih tanggal selesai cuti'
-                                        : DateFormat(
-                                          'EEEE, dd MMMM yyyy',
-                                          'id_ID',
-                                        ).format(_tanggalSelesai!),
-                                    style: TextStyle(
-                                      color:
-                                          _tanggalSelesai == null
-                                              ? Colors.grey
-                                              : const Color(0xFF003554),
-                                      fontSize: 15,
-                                      fontWeight:
-                                          _tanggalSelesai == null
-                                              ? FontWeight.normal
-                                              : FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                          ],
-                        ),
-                      ),
+                      isFirst: false,
                     ),
                   ],
                 ),
@@ -574,9 +463,9 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
               if (_tanggalMulai != null && _tanggalSelesai != null)
                 Container(
                   margin: const EdgeInsets.only(top: 12),
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF003554).withOpacity(0.05),
+                    color: const Color(0xFF003554).withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: const Color(0xFF003554).withOpacity(0.2),
@@ -590,14 +479,12 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
                         size: 20,
                       ),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Durasi cuti: ${_calculateDuration()} hari',
-                          style: const TextStyle(
-                            color: Color(0xFF003554),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      Text(
+                        'Durasi cuti: ${_calculateDuration()} hari',
+                        style: const TextStyle(
+                          color: Color(0xFF003554),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -607,14 +494,7 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
               const SizedBox(height: 24),
 
               // File Upload Section
-              const Text(
-                'Dokumen Pendukung',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF003554),
-                ),
-              ),
+              _buildSectionTitle('Dokumen Pendukung', Icons.attach_file),
               const SizedBox(height: 12),
 
               InkWell(
@@ -626,12 +506,10 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color:
-                          _pickedFile == null
-                              ? const Color(0xFFE0E8F0)
-                              : const Color(0xFF003554),
+                      color: _pickedFile == null
+                          ? const Color(0xFFE0E8F0)
+                          : const Color(0xFF003554),
                       width: 2,
-                      style: BorderStyle.solid,
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -641,51 +519,66 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
                       ),
                     ],
                   ),
-                  child: Column(
+                  child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color:
-                              _pickedFile == null
-                                  ? const Color(0xFFF5F9FC)
-                                  : const Color(0xFF003554).withOpacity(0.1),
+                          color: _pickedFile == null
+                              ? const Color(0xFFF5F9FC)
+                              : const Color(0xFF003554).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
                           _pickedFile == null
                               ? Icons.cloud_upload_outlined
-                              : Icons.check_circle_outline,
-                          size: 40,
-                          color:
-                              _pickedFile == null
-                                  ? Colors.grey
-                                  : const Color(0xFF003554),
+                              : Icons.insert_drive_file_outlined,
+                          size: 28,
+                          color: _pickedFile == null
+                              ? Colors.grey
+                              : const Color(0xFF003554),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _pickedFile == null
-                            ? 'Upload Surat Cuti'
-                            : _pickedFile!.name,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color:
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
                               _pickedFile == null
-                                  ? Colors.grey
-                                  : const Color(0xFF003554),
+                                  ? 'Upload Surat Cuti'
+                                  : _pickedFile!.name,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: _pickedFile == null
+                                    ? const Color(0xFF003554)
+                                    : const Color(0xFF003554),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _pickedFile == null
+                                  ? 'JPG, PNG, PDF (Maks. 2MB)'
+                                  : 'Tap untuk mengganti file',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
+                      Icon(
                         _pickedFile == null
-                            ? 'JPG, PNG, atau PDF (Maks. 2MB)'
-                            : 'Tap untuk mengganti file',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                            ? Icons.add_circle_outline
+                            : Icons.check_circle,
+                        color: _pickedFile == null
+                            ? Colors.grey
+                            : const Color(0xFF003554),
+                        size: 24,
                       ),
                     ],
                   ),
@@ -697,50 +590,136 @@ class _FormCutiScreenState extends State<FormCutiScreen> {
               // Submit Button
               SizedBox(
                 width: double.infinity,
-                height: 54,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: _submitting ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF003554),
                     foregroundColor: Colors.white,
-                    elevation: 0,
-                    shadowColor: Colors.transparent,
+                    disabledBackgroundColor: const Color(0xFF003554).withOpacity(0.6),
+                    elevation: 2,
+                    shadowColor: const Color(0xFF003554).withOpacity(0.3),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child:
-                      _submitting
-                          ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                  child: _submitting
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.send_rounded, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Ajukan Cuti',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
                               ),
                             ),
-                          )
-                          : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.send, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Ajukan Cuti',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
+                        ),
                 ),
               ),
 
               const SizedBox(height: 24),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: const Color(0xFF003554)),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF003554),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateSelector({
+    required String label,
+    required IconData icon,
+    required DateTime? date,
+    required String hint,
+    required VoidCallback onTap,
+    required bool isFirst,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.vertical(
+        top: isFirst ? const Radius.circular(16) : Radius.zero,
+        bottom: isFirst ? Radius.zero : const Radius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF003554).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFF003554),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    date == null
+                        ? hint
+                        : DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(date),
+                    style: TextStyle(
+                      color: date == null ? Colors.grey : const Color(0xFF003554),
+                      fontSize: 15,
+                      fontWeight: date == null ? FontWeight.normal : FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.grey[400],
+            ),
+          ],
         ),
       ),
     );

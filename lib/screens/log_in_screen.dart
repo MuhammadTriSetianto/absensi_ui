@@ -111,19 +111,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   // Login Page text (top left)
-                  const Positioned(
-                    top: 50,
-                    left: 20,
-                    child: Text(
-                      'LOGIN PAGE',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ),
                   // Welcome content
                   Positioned(
                     bottom: 30,
