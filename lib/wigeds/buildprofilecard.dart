@@ -4,7 +4,7 @@ class BuildProfileCard extends StatelessWidget {
   final String? name;
   final String? idname;
   final String? image;
-  final String? role;
+  final int? role;
 
   const BuildProfileCard({
     super.key,

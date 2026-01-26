@@ -4,7 +4,7 @@ class GetUser {
   final String email;
   final String noHp;
   final String alamat;
-  final String idRole;
+  final int idRole;
   final String? image;
 
   GetUser({
@@ -17,28 +17,15 @@ class GetUser {
     this.image,
   });
   // JSON → Object
- factory GetUser.fromJson(Map<String, dynamic> json) {
+factory GetUser.fromJson(Map<String, dynamic> json) {
   return GetUser(
-    idPegawai: json['id_pegawai'].toString() ?? '',
+    idPegawai: json['id_pegawai'].toString(),
     name: json['name'] ?? '',
-    noHp: json['no_hp'] ?? '',
     email: json['email'] ?? '',
-    image: json['image'] ?? '',
+    noHp: json['no_hp'] ?? '',
     alamat: json['alamat'] ?? '',
-    idRole: json['id_role'] ?? '',
-
-  );
-}
-
-
-  // Object → JSON (UNTUK POST / PUT)
-  Map<String, dynamic> toJson() {
-    return {
-      'id_pegawai': idPegawai,
-      'name': name,
-      'no_hp': noHp,
-      'email': email,
-      'alamat': alamat,
-    };
+    image: json['image'],
+    idRole: int.tryParse(json['role'].toString()) ?? 0,
+    );
   }
 }

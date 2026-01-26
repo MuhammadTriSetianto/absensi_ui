@@ -71,7 +71,6 @@ class _EditProfileState extends State<EditProfile> {
         final file = File(pickedFile.path);
         final fileSize = await file.length();
 
-        // Validasi ukuran file (max 2MB = 2048KB)
         if (fileSize > 2048 * 1024) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -174,7 +173,7 @@ class _EditProfileState extends State<EditProfile> {
 
     try {
       final uri = Uri.parse(
-        'http://10.0.2.2:8000/api/updatePegawai', // GANTI URL API
+        'http://10.0.2.2:8000/api/updatePegawai',
       );
 
       var request = http.MultipartRequest('POST', uri);

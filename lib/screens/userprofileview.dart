@@ -44,7 +44,7 @@ class _UserProfileViewState extends State<UserProfileView> {
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     final keyToken = prefs.remove('token');
-    final rresponse = await http.get(
+    final response = await http.post(
       Uri.parse('http://10.0.2.2:8000/api/logout'),
       headers: {
         'Authorization': 'Bearer $keyToken',
@@ -52,12 +52,16 @@ class _UserProfileViewState extends State<UserProfileView> {
       },
     );
 
-    Navigator.pushReplacementNamed(context, '/login');
+    if (response.statusCode == 200) {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   Future<GetUser> getUser() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
+    print ('token $token');
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/profile'),
       headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
@@ -147,10 +151,9 @@ class _UserProfileViewState extends State<UserProfileView> {
                         }
 
                         final userData = snapshot.data!;
-
+                      print ('data user ${userData.idRole}');
                         return Column(
                           children: [
-                            /// PROFILE CARD (UI TIDAK DIUBAH)
                             BuildProfileCard(
                               name: userData.name,
                               image: userData.image,
@@ -173,7 +176,7 @@ class _UserProfileViewState extends State<UserProfileView> {
                                   totalHadir: getTotalHadir(
                                     snapshotAbsen.data!.absensi!,
                                   ),
-                                  totalIzin: snapshotAbsen.data!.izin.length,
+                                  totalIzin: snapshotAbsen.data!.izin,
                                   totalCuti: snapshotAbsen.data!.totalCuti,
                                 );
                               },
@@ -216,6 +219,8 @@ class _UserProfileViewState extends State<UserProfileView> {
                             const SizedBox(height: 12),
 
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 Expanded(
                                   child: _buildActionCard(
@@ -235,6 +240,31 @@ class _UserProfileViewState extends State<UserProfileView> {
                                     },
                                   ),
                                 ),
+                              const SizedBox(width: 24),
+                                Expanded(
+                                  child: _buildActionCard(
+                                    icon: Icons.history_rounded,
+                                    label: 'Riwayat Absensi',
+                                    color: const Color(0xFF00C897),
+                                    onTap: () {},
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildActionCard(
+                                    icon: Icons.description_rounded,
+                                    label: 'Status Pengajuan',
+                                    color: const Color(0xFFFFC107),
+                                    onTap: () {
+                                    
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
                                 Expanded(
                                   child: _buildActionCard(
                                     icon: Icons.help_rounded,
@@ -274,7 +304,8 @@ class _UserProfileViewState extends State<UserProfileView> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        height:100,
+        width: 50,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -287,14 +318,17 @@ class _UserProfileViewState extends State<UserProfileView> {
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(14),
+              height: 50,
+              width: 50,
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: color, size: 28),
+              child: Center(child: Icon(icon, color: color, size: 28)),
             ),
             const SizedBox(height: 10),
             Text(

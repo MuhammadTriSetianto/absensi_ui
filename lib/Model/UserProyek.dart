@@ -8,6 +8,7 @@ class UserProyek {
   Proyek? proyek;
 
   UserProyek(this.id_pegawai, this.id_proyek, this.pegawai, this.proyek);
+  
   factory UserProyek.fromJson(Map<String, dynamic> json) {
     return UserProyek(
       json['id_pegawai']?.toString(),

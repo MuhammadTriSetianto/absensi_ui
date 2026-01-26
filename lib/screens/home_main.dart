@@ -57,15 +57,12 @@ class _HomeMainState extends State<HomeMain> {
 
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/profile'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return GetUser.fromJson(data['data']); // kalau API Laravel pakai data
+      return GetUser.fromJson(data['data']);
     } else {
       throw Exception('Gagal mengambil data user');
     }
@@ -77,11 +74,7 @@ class _HomeMainState extends State<HomeMain> {
     final token = prefs.getString('token');
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/absen/user/semua'),
-      headers: {
-        'Authorization':
-            'Bearer $token',
-        'Accept': 'application/json',
-      },
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -572,7 +565,7 @@ class _HomeMainState extends State<HomeMain> {
 
         final absen = snapshot.data!;
         final namaProyek = absen.absensi[0].proyek.namaProyek ?? '';
-        final totalizin = absen.izin.length;
+        final totalizin = absen.izin;
         final totalHadir = absen.absensi;
         final totalCuti = absen.totalCuti;
 
@@ -633,12 +626,7 @@ class _HomeMainState extends State<HomeMain> {
                     icon: Icons.event_note_rounded,
                     color: const Color(0xFFFF6B35),
                   ),
-                  _buildStatItem(
-                    label: 'Cuti',
-                    value: totalCuti.toString(),
-                    icon: Icons.beach_access_rounded,
-                    color: const Color(0xFF0066CC),
-                  ),
+         
                 ],
               ),
             ],
