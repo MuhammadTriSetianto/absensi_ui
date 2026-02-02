@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:absensi_proyek/Model/UserProyek.dart';
 import 'package:absensi_proyek/screens/landing_page_screen.dart';
 import 'package:absensi_proyek/screens/log_in_screen.dart';
-import 'package:absensi_proyek/screens/proyek_display/list_proyek.dart';
+import 'package:absensi_proyek/screens/view/list_proyek.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:absensi_proyek/screens/home_main.dart';
@@ -47,7 +47,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _pages = [
     const HomeMain(),
     const AbsensiMenuScreen(),
-    const Aktiviti(),
+    // const Aktiviti(),
     const FormMenuScreen(),
     const UserProfileView(),
   ];
@@ -73,11 +73,11 @@ class _MainNavigationState extends State<MainNavigation> {
             activeIcon: Icon(Icons.fingerprint),
             label: 'Absensi',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history),
-            label: 'Aktivitas',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.history_outlined),
+          //   activeIcon: Icon(Icons.history),
+          //   label: 'Aktivitas',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.description_outlined),
             activeIcon: Icon(Icons.description),

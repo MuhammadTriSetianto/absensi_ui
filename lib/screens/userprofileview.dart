@@ -5,6 +5,8 @@ import 'package:absensi_proyek/Model/Absensi.dart';
 import 'package:absensi_proyek/Model/RekapAbsensi.dart';
 import 'package:absensi_proyek/Model/User.dart';
 import 'package:absensi_proyek/screens/log_in_screen.dart';
+import 'package:absensi_proyek/screens/view/riwayat_absen.dart';
+import 'package:absensi_proyek/screens/view/riwayat_surat.dart';
 import 'package:absensi_proyek/wigeds/buildheader.dart';
 import 'package:absensi_proyek/wigeds/buildinfocard.dart';
 import 'package:absensi_proyek/wigeds/buildprofilecard.dart';
@@ -61,7 +63,7 @@ class _UserProfileViewState extends State<UserProfileView> {
   Future<GetUser> getUser() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-    print ('token $token');
+    print('token $token');
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8000/api/profile'),
       headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
@@ -151,7 +153,7 @@ class _UserProfileViewState extends State<UserProfileView> {
                         }
 
                         final userData = snapshot.data!;
-                      print ('data user ${userData.idRole}');
+                        print('data user ${userData.idRole}');
                         return Column(
                           children: [
                             BuildProfileCard(
@@ -240,13 +242,22 @@ class _UserProfileViewState extends State<UserProfileView> {
                                     },
                                   ),
                                 ),
-                              const SizedBox(width: 24),
+                                const SizedBox(width: 24),
                                 Expanded(
                                   child: _buildActionCard(
                                     icon: Icons.history_rounded,
                                     label: 'Riwayat Absensi',
                                     color: const Color(0xFF00C897),
-                                    onTap: () {},
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  const RiwayatAbsenScreen(),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ],
@@ -260,19 +271,22 @@ class _UserProfileViewState extends State<UserProfileView> {
                                     label: 'Status Pengajuan',
                                     color: const Color(0xFFFFC107),
                                     onTap: () {
-                                    
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder:(context) => const RiwayatSuratScreens()),
+                                      );
                                     },
                                   ),
                                 ),
                                 const SizedBox(width: 24),
-                                Expanded(
-                                  child: _buildActionCard(
-                                    icon: Icons.help_rounded,
-                                    label: 'Bantuan',
-                                    color: const Color(0xFF9C27B0),
-                                    onTap: () {},
-                                  ),
-                                ),
+                                // Expanded(
+                                //   child: _buildActionCard(
+                                //     icon: Icons.help_rounded,
+                                //     label: 'Bantuan',
+                                //     color: const Color(0xFF9C27B0),
+                                //     onTap: () {},
+                                //   ),
+                                // ),
                               ],
                             ),
 
@@ -304,7 +318,7 @@ class _UserProfileViewState extends State<UserProfileView> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        height:100,
+        height: 100,
         width: 50,
         decoration: BoxDecoration(
           color: Colors.white,
