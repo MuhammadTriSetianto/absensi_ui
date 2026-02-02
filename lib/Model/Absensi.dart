@@ -1,5 +1,5 @@
 import 'package:absensi_proyek/Model/Proyek.dart';
-import 'package:absensi_proyek/screens/proyek_display/list_proyek.dart';
+import 'package:absensi_proyek/screens/view/list_proyek.dart';
 import 'package:absensi_proyek/Model/Pegawai.dart';
 
 class Absensi {
@@ -7,22 +7,22 @@ class Absensi {
   final String idPegawai;
   final int idProyek;
   final String tanggalAbsensi;
-  final String jamMasuk;
-  final String jamPulang;
+  final String? jamMasuk;
+  final String? jamPulang;
   final String keteranganAbsensi;
-  final Pegawai pegawai;
-  final Proyek proyek;
+  final Pegawai? pegawai;
+  final Proyek? proyek;
 
   Absensi({
     required this.idAbsensi,
     required this.idPegawai,
     required this.idProyek,
     required this.tanggalAbsensi,
-    required this.jamMasuk,
-    required this.jamPulang,
+    this.jamMasuk,
+    this.jamPulang,
     required this.keteranganAbsensi,
-    required this.pegawai,
-    required this.proyek,
+    this.pegawai,
+    this.proyek,
   });
 
   factory Absensi.fromJson(Map<String, dynamic> json) {
@@ -34,8 +34,10 @@ class Absensi {
       jamMasuk: json['jam_masuk'],
       jamPulang: json['jam_pulang'],
       keteranganAbsensi: json['keterangan_absensi'],
-      pegawai: Pegawai.fromJson(json['pegawai']),
-      proyek: Proyek.fromJson(json['proyek']),
+      pegawai:
+          json['pegawai'] != null ? Pegawai.fromJson(json['pegawai']) : null,
+
+      proyek: json['proyek'] != null ? Proyek.fromJson(json['proyek']) : null,  
     );
   }
 }
